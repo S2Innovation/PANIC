@@ -70,8 +70,8 @@ class FilterStack(SortedDict):
             if isSequence(filters): #It doesn't matter which types
                 [self.add(str(i),f) for i,f in enumerate(filters)]
                 
-            elif isMapping(filters) and isMapping(filters.values()[0]):
-                    [self.add(k,v) for k,v in filters.items()]
+            elif isMapping(filters) and isMapping(list(filters.values())[0]):
+                    [self.add(k,v) for k,v in list(filters.items())]
             
             else:
                 self.add('default',filters)
@@ -87,11 +87,11 @@ class FilterStack(SortedDict):
         # Several keys at same level acts like OR
         # Keys at different levet act like AND
         # An !exclude clause always aborts
-        for k,v in self.items():
-            if verbose: print('match((%s,%s),%s)'%(k,v,value))
+        for k,v in list(self.items()):
+            if verbose: print(('match((%s,%s),%s)'%(k,v,value)))
             hits = 0
 
-            for p,r in v.items():
+            for p,r in list(v.items()):
                 #get the parameter
                 t = value.get(p,'') if is_map else getattr(value,p,'')
                 #get the result of the matching method (~! will negate)
@@ -106,7 +106,7 @@ class FilterStack(SortedDict):
                     hits,gm = hits+1,m
                 elif fd.re.match('^[!~]',str(r)):
                     #Negated matches exclude the whole element
-                    if verbose: print('%s excluded by %s'%(t,r))
+                    if verbose: print(('%s excluded by %s'%(t,r)))
                     return False
 
             if not hits: 
@@ -116,15 +116,15 @@ class FilterStack(SortedDict):
         return gm if hits else None
         
     def apply(self,sequence,strict=False,verbose=False):
-        r = filter(partial(self.match,strict=strict,verbose=verbose),sequence)
+        r = list(filter(partial(self.match,strict=strict,verbose=verbose),sequence))
         if verbose:
-            print('FilterStack.apply(%s,%s): \n\t%s'%(sequence,self.items(),r))        
+            print(('FilterStack.apply(%s,%s): \n\t%s'%(sequence,list(self.items()),r)))        
         return r
       
     def __repr__(self):
         dct = {}
-        for k,v in self.items():
-            for kk,vv in v.items():
+        for k,v in list(self.items()):
+            for kk,vv in list(v.items()):
                 if vv:
                     dct[k] = dct.get(k,{})
                     dct[k][kk] = vv
@@ -173,7 +173,7 @@ class AlarmView(EventListener):
         self.defaults = Struct(dict((k,'') for k in 
               ('device','active','severity','regexp','receivers',
                'formula','attribute','history','failed','hierarchy')))
-        [self.defaults.update(**f) for f in self.filters.values()]
+        [self.defaults.update(**f) for f in list(self.filters.values())]
         self.filters.insert(0,'default',self.defaults.dict())
         
         self.info('AlarmView(%s)'%str((filters,scope,refresh,asynch)))
@@ -205,9 +205,9 @@ class AlarmView(EventListener):
                     self.apis[p] = None
                 
         #@TODO: MULTIPLE APIS OBJECTS SHOULD BE MANAGED!!
-        self.api = self.apis.values()[0]
+        self.api = list(self.apis.values())[0]
         
-        if not self.api.keys():
+        if not list(self.api.keys()):
             self.warning('NO ALARMS FOUND IN DATABASE!?!?')
 
 
@@ -243,7 +243,7 @@ class AlarmView(EventListener):
         self.logPrint('info','\n\n')
         
     def __del__(self):
-        print('AlarmView(%s).__del__()'%self.name)
+        print(('AlarmView(%s).__del__()'%self.name))
         self.disconnect()
         
     @staticmethod
@@ -258,10 +258,10 @@ class AlarmView(EventListener):
         if opts:
             opts = dict(o.split('=') if '=' in o else (o,True) 
                         for o in opts)
-            opts.update((o,fd.str2type(v)) for o,v in opts.items())
+            opts.update((o,fd.str2type(v)) for o,v in list(opts.items()))
         
-        print('AlarmView(Test,\t'
-            '\tscope=%s,\n\ttlimit=%s,\n\t**%s)\n'%(scope,tlimit,opts))
+        print(('AlarmView(Test,\t'
+            '\tscope=%s,\n\ttlimit=%s,\n\t**%s)\n'%(scope,tlimit,opts)))
         
         if opts.get('d',False):
             th = TangoAttribute.get_thread()
@@ -273,17 +273,17 @@ class AlarmView(EventListener):
         view = AlarmView('Test',scope=scope,
                          verbose=verbose,
                          **opts)
-        print('\n'.join('>'*80 for i in range(4)))    
+        print(('\n'.join('>'*80 for i in range(4))))    
         
         cols = 'sortkey','tag','state','active','time','severity'
         while fd.now()<(t0+tlimit):
             fd.wait(3.)
-            print('\n'+'<'*80)
+            print(('\n'+'<'*80))
             l = view.sort(as_text={'cols':cols})
-            print('\n'.join(l))
+            print(('\n'.join(l)))
             
-        print('AlarmView.__test__(%s) finished after %d seconds'
-              %(args[0],fd.now()-t0))
+        print(('AlarmView.__test__(%s) finished after %d seconds'
+              %(args[0],fd.now()-t0)))
         
     def get_alarm(self,alarm):
         #self.info('get_alarm(%s)'%alarm)
@@ -310,7 +310,7 @@ class AlarmView(EventListener):
         Alarms should be returned matching the current sortkey.
         """
         if not self.filtered and not filters:
-            r = self.api.keys()[:]
+            r = list(self.api.keys())[:]
         else:
             if filters:
                 self.apply_filters(self,**filters)        
@@ -347,7 +347,7 @@ class AlarmView(EventListener):
                 
             self.debug('apply_filters(%s)'%repr(filters))
             self.filtered = [a.tag for a in 
-                             filters.apply(self.api.values(),verbose=0)]
+                             filters.apply(list(self.api.values()),verbose=0)]
             self.filters = filters
             
             objs = [self.api[f] for f in self.filtered]
@@ -407,9 +407,9 @@ class AlarmView(EventListener):
         * failed
         """
         try:
-            updated = [a for a in self.alarms.values() if a.updated]
+            updated = [a for a in list(self.alarms.values()) if a.updated]
             if len(updated) == len(self.alarms):
-                [a.get_active() for a in self.alarms.values() 
+                [a.get_active() for a in list(self.alarms.values()) 
                     if a.active in (1,True)]
             else:
                 self.info('sort(): %d alarms not updated yet'%(
@@ -429,7 +429,7 @@ class AlarmView(EventListener):
                 if filtered:
                     objs = [self.api[f] for f in self.filtered]
                 else:
-                    objs = self.alarms.values()
+                    objs = list(self.alarms.values())
 
                 ordered = sorted(objs,key=sortkey)
                 if keep: self.ordered = ordered
@@ -477,7 +477,7 @@ class AlarmView(EventListener):
                 s += formatters[r](*args)
             return s
         except:
-            print traceback.format_exc()
+            print(traceback.format_exc())
             return s
           
     def get_alarm_from_text(self,text,cols=None,
@@ -513,7 +513,7 @@ class AlarmView(EventListener):
             try:
                 alarm = self.get_source(alarm).full_name
                 value = self.values.get(alarm,None)
-            except Exception,e:
+            except Exception as e:
                 self.warning('get_model(%s): %s'%(alarm,e))
         return value
       
@@ -525,13 +525,13 @@ class AlarmView(EventListener):
             if ':' not in alarm:
                 alarm = ft.get_tango_host()+'/'+alarm
 
-        except Exception,e:
+        except Exception as e:
             self.warning('get_model(%s): %s'%(alarm,e))
 
         return str(alarm).lower()
       
     def get_sources(self):
-        return dict((s,v) for s,v in AlarmView.sources.items()
+        return dict((s,v) for s,v in list(AlarmView.sources.items())
                 if any(l() is self for l in v.listeners))
       
     def update_sources(self):
@@ -579,7 +579,7 @@ class AlarmView(EventListener):
             return ta
             
     def disconnect(self,alarm=None):
-        sources = self.sources.values() if alarm is None else [self.get_source(alarm)]
+        sources = list(self.sources.values()) if alarm is None else [self.get_source(alarm)]
         for s in sources:
             s.removeListener(self)
             if not s.hasListeners():
@@ -620,7 +620,7 @@ class AlarmView(EventListener):
                 dev = parse_tango_model(src.device)['devicename']
                 dev = self.api.get_device(dev)
                 assert dev,'UnknownDevice: %s'%src.device
-                alarms = dev.alarms.keys()
+                alarms = list(dev.alarms.keys())
                 
             check =  check_device_cached(src.device)
             if check in (None,'FAULT','UNKNOWN'):
@@ -704,7 +704,7 @@ class AlarmView(EventListener):
                       '(%.2e in set_state, %.2e per alarm)\n'
                        %(tt,ts,ta))
                     
-        except Exception,e:
+        except Exception as e:
             self.error('AlarmView(%s).event_hook(%s,%s,%s)'%(
               self.name,src,type_, shortstr(value)))
             self.error(traceback.format_exc())

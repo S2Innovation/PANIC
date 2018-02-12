@@ -16,7 +16,7 @@ def test_AlarmAPI():
 @InOutLogged
 def test_AlarmDS(device=''):
   if not device:
-    device = Fn.first((d for d,v in api.devices.items() if v.ping() is not None),None)
+    device = Fn.first((d for d,v in list(api.devices.items()) if v.ping() is not None),None)
   Fn.log.info('Testing AlarmDS(%s)'%device)
   if device:
     device = api.devices.get(device)

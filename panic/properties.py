@@ -357,12 +357,12 @@ TODO_LIST = {
          [] ] ,
     }
     
-PyAlarmDefaultProperties = dict(join(d.items() for d in 
+PyAlarmDefaultProperties = dict(join(list(d.items()) for d in 
                         (ALARM_CYCLE,ALARM_ARCHIVE,ALARM_LOGS,DEVICE_CONFIG)))
-DEVICE_PROPERTIES = dict(join(v.items() for v in 
+DEVICE_PROPERTIES = dict(join(list(v.items()) for v in 
                               (PyAlarmDefaultProperties,ALARM_TABLES)))
-ALARM_CONFIG = (ALARM_CYCLE.keys()+ALARM_ARCHIVE.keys()
-                                +ALARM_LOGS.keys()+DEVICE_CONFIG.keys())
+ALARM_CONFIG = (list(ALARM_CYCLE.keys())+list(ALARM_ARCHIVE.keys())
+                                +list(ALARM_LOGS.keys())+list(DEVICE_CONFIG.keys()))
 
 try:
     from fandango.doc import get_fn_autodoc

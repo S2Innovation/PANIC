@@ -13,8 +13,8 @@ from panic.gui.utils import *
 import panic.gui.actions
 
 #AlarmFormula widget is added in the ui_data.py file
-from ui_data import Ui_Data,Ui_ReceiversLine
-from ui_data import uiBodyForm,uiRowForm
+from .ui_data import Ui_Data,Ui_ReceiversLine
+from .ui_data import uiBodyForm,uiRowForm
 
 #get_next_index = lambda d: max([0]+list(d))+1
 
@@ -45,7 +45,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
             self._timer = Qt.QTimer()
             self.connect(self._timer,Qt.SIGNAL("timeout()"), self.valueChanged)
             self._timer.start(refresh)
-            print('AlarmForm._timer(%s)'%refresh)
+            print(('AlarmForm._timer(%s)'%refresh))
             
     def setCurrentAlarm(self,alarm=None):
         if isinstance(alarm,panic.Alarm):
@@ -54,7 +54,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
             self._currentAlarm = panic.Alarm('')
         else:
             self._currentAlarm = self.api[alarm]
-        print 'AlarmForm.setCurrentAlarm(%s)'%self._currentAlarm
+        print('AlarmForm.setCurrentAlarm(%s)'%self._currentAlarm)
         try: self._wi.formulaTextEdit.setModel(self._currentAlarm)
         except: traceback.print_exc()
         return self._currentAlarm
@@ -107,7 +107,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
             formula=self._wi.formulaTextEdit.toPlainText(),parent=self.parent())
         self.preview.connect(self.preview.upperPanel,Qt.SIGNAL('onSave'),
             lambda obj,s=self:(s.enableEditForm(False),s.setAlarmData(obj)))
-        from utils import WindowManager
+        from .utils import WindowManager
         WindowManager.addWindow(self.preview)
         self.preview.show()
         
@@ -132,19 +132,19 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
     def onEdit(self,alarm=None):
         if alarm: self.setCurrentAlarm(alarm)
         alarm = self.getCurrentAlarm()
-        print "AlarmForm.onEdit(%s)"%alarm
+        print("AlarmForm.onEdit(%s)"%alarm)
         
         self.setAlarmData(alarm)
         self.enableEditForm(True)
         
     def onNew(self):
-        print'onNew()'
+        print('onNew()')
         self.clearAlarmData()
         self.enableEditForm(True)
         self._tvl.updateStyle()
 
     def onSave(self):
-        print'onSave()'+'<'*80
+        print('onSave()'+'<'*80)
         if self.checkDataFields() and \
                 self.validate('onSave',self._currentAlarm.tag):
             old_name = self.getCurrentAlarm().tag
@@ -156,7 +156,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
         self.valueChanged()
 
     def onCancel(self):
-        print'onCancel()'
+        print('onCancel()')
         self.formulaeditor.Clr()
         self.setAlarmData()
         self.enableEditForm(not(self.getCurrentAlarm() 
@@ -181,11 +181,11 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
     def valueChanged(self,forced=False):
         timed = hasattr(self,'_timer')
         alarm = self.getCurrentAlarm()
-        print('AlarmForm(%s).valueChanged(%s,%s)'%(alarm.tag,forced,timed))
+        print(('AlarmForm(%s).valueChanged(%s,%s)'%(alarm.tag,forced,timed)))
         if timed or forced:
             dis = not alarm.get_enabled(force=True)
             ack = alarm.get_acknowledged(force=True)
-            print('\tdis,ack = ',(dis,ack))
+            print(('\tdis,ack = ',(dis,ack)))
         if timed:
             alarm.set_active(alarm.get_time(True))
             alarm.set_state()            
@@ -222,7 +222,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
         self._dataWidget._wi.horizontalLane.addWidget(self.w)
 
     def clearAlarmData(self):
-        print "AlarmForm.clearAlarmData()"
+        print("AlarmForm.clearAlarmData()")
         self.setCurrentAlarm()
         self._dataWidget._wi.nameLineEdit.clear()
         self._dataWidget._wi.deviceLineEdit.clear()
@@ -242,7 +242,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
         #This method is called from listWidget.currentRowChanged() event
         
         if alarm: self.setCurrentAlarm(alarm)
-        print 'AlarmForm.setAlarmData(%s)'%(self.getCurrentAlarm())
+        print('AlarmForm.setAlarmData(%s)'%(self.getCurrentAlarm()))
         self.setWindowTitle('ALARM: %s'%self.getCurrentAlarm().tag)
 
         #print 'PanicGUI.setAlarmData(%d,%s@%s): %s-%s since %s,dis:%s,ack:%s'%(
@@ -308,7 +308,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
             #def prepareDataWidget(self)
             alarm = self.getCurrentAlarm()
             #Puts the widget in edit mode
-            print 'In prepareDataWidget(%s)'%alarm.tag
+            print('In prepareDataWidget(%s)'%alarm.tag)
             
             for i in range(self._dataWidget._wi.severityCombo.count()):
                 if str(self._dataWidget._wi.severityCombo.itemText(i)).lower()\
@@ -316,7 +316,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
                     self._dataWidget._wi.severityCombo.setCurrentIndex(i)
                     break
             self.setComboBox(self._dataWidget._wi.deviceCombo,
-                             values=['']+self.api.devices.keys(),sort=True)
+                             values=['']+list(self.api.devices.keys()),sort=True)
             if self.getCurrentAlarm().device:
                 for i in range(self._dataWidget._wi.deviceCombo.count()):
                     if str(self._dataWidget._wi.deviceCombo.itemText(i)
@@ -325,7 +325,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
                         break
                     
             self.setComboBox(self._receiversLine._wi.receiversCombo,
-                             self.api.phonebook.keys(),sort=True)
+                             list(self.api.phonebook.keys()),sort=True)
             self._tvl.updateStyle()
             #End of prepareDataWidget(self)
             
@@ -354,7 +354,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
             ('formula',str(widget._wi.formulaTextEdit.toPlainText()).strip()),
             ('severity',str(widget._wi.severityCombo.currentText())),
             ])
-        print 'getDataFields(%s): %s'%(data['tag'],data)
+        print('getDataFields(%s): %s'%(data['tag'],data))
         return data
 
     def checkDataFields(self):
@@ -372,7 +372,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
             return True
 
     def saveData(self, old_name=None):
-        print 'In saveData(%s)'%old_name
+        print('In saveData(%s)'%old_name)
         data = self.getDataFields()
         widget = self._dataWidget
         widget._wi.deviceLineEdit.setText(data['device'])
@@ -382,16 +382,16 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
         alarm = self.api.alarms.get(tag,None)
         
         if not old_name or old_name not in self.api:
-            print "\tAlarm doesn't exist... creating new"
+            print("\tAlarm doesn't exist... creating new")
             try:
                 self.api.add(**data)
-            except Exception,e:
+            except Exception as e:
                 Qt.QMessageBox.critical(self,"Error!",str(e), 
                     QtGui.QMessageBox.AcceptRole, QtGui.QMessageBox.AcceptRole)
-                print traceback.format_exc()
+                print(traceback.format_exc())
         
         elif old_name == tag:
-            print "\tAlarm exists ... modifying fields (%s)"%str(data.values())
+            print("\tAlarm exists ... modifying fields (%s)"%str(list(data.values())))
             if device!=self.api[tag].device:
                 self.api.rename(tag,tag,new_device=device)
                 alarm = self.api[tag]
@@ -406,7 +406,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
                 QtGui.QMessageBox.AcceptRole, QtGui.QMessageBox.AcceptRole)
             
         else:
-            print "\tAlarm renamed (%s -> %s)"%(old_name,tag)
+            print("\tAlarm renamed (%s -> %s)"%(old_name,tag))
             if device: self.api.rename(old_name,new_tag=tag,new_device=device)
             else: self.api.rename(old_name,new_tag=tag)
             alarm = self.api[tag]
@@ -416,7 +416,7 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
             # Renamed alarms will not appear until the next onReload() call
             if SNAP_ALLOWED:
                 try:
-                    print('\tRenaming Alarm context %s to %s'%(old_name,tag))
+                    print(('\tRenaming Alarm context %s to %s'%(old_name,tag)))
                     snapi = get_snap_api()
                     self.ctx_list = snapi.get_contexts()
                     for cid in self.ctx_list:
@@ -424,11 +424,11 @@ class AlarmForm(FormParentClass,iValidatedWidget): #(QtGui.QWidget):
                             and self.ctx_list[cid].reason=='ALARM'):
                             snapi.db.rename_context(cid, tag.lower())
                             break
-                except: print 'Renaming context: Failed!\n%s'%traceback.format_exc()
+                except: print('Renaming context: Failed!\n%s'%traceback.format_exc())
         
         self.setAlarmData(tag)
         self.valueChanged()
-        print 'Out of saveNewData()'
+        print('Out of saveNewData()')
     
     ###########################################################################
     # AlarmActions,object
@@ -618,7 +618,7 @@ class FormulaEditor(QtGui.QWidget):
             scrollarea = self._ui.scrollAreaWidgetContents
             scrollarea.layout().insertWidget(i-1,self.object)
         else:
-            print "widget is already first"
+            print("widget is already first")
             Qt.QMessageBox.warning(self,"Warning",
                                    "What you are about to do is impossible.")
         self.UpdateText()
@@ -634,14 +634,14 @@ class FormulaEditor(QtGui.QWidget):
             self.widget.close()
             self._ui.scrollAreaWidgetContents.layout().insertWidget(i+1,self.object)
         else:
-            print "widget is already first"
+            print("widget is already first")
             Qt.QMessageBox.warning(self,"Warning",
                                    "What you are about to do is impossible.")
         self.UpdateText()
 
     def Clr(self):
         """Cleaning"""
-        print 'clearing form ...'
+        print('clearing form ...')
         self.widgets, self._rowList = self._rowList, []
         for w in self.widgets:
             #lay.removeWidget(w)
@@ -666,13 +666,13 @@ class FormulaEditor(QtGui.QWidget):
 
     def PrintText(self): # just egzample
         self.rows = self._rowList
-        print "PRINT"
+        print("PRINT")
         for i in self.rows:
-            print "childrens: ", self.rows[i]
+            print("childrens: ", self.rows[i])
             self.targets = ('variableCombo','valueCombo','operatorCombo')
             for t in self.targets:
-                print "childrens: ", self.rows[i].children()
-                print getattr(self.rows[i].children(),t,None) or 'Attr_%s_not_found'%t
+                print("childrens: ", self.rows[i].children())
+                print(getattr(self.rows[i].children(),t,None) or 'Attr_%s_not_found'%t)
 
     def UpdateText(self,unused_text=''):
         self.text = ' '.join([str(row.GetText()) for row in self._rowList])

@@ -12,11 +12,11 @@ view = panic.view.AlarmView(domain=domain,verbose=True,filters='!ck') #filters={
 import fandango as fn
 
 while 1:
-  c = raw_input('command or exit?')
+  c = input('command or exit?')
   if c == 'exit': break
   try:
-    if c: print(fn.evalX(c,_locals=locals()))
-  except Exception,e: print(e)
+    if c: print((fn.evalX(c,_locals=locals())))
+  except Exception as e: print(e)
 
 
 

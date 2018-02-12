@@ -1,5 +1,5 @@
 import sys, PyTango
-from utils import Qt
+from .utils import Qt
 from taurus.qt.qtgui import container
 from taurus.qt.qtgui.panel import TaurusForm
 
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     tmw.show()
     s=tmw.splashScreen()
     s.finish(tmw)
-    print '*'*80
+    print('*'*80)
 
     toolbar = PanicToolbar(tmw)
     tmw.addToolBar(toolbar)

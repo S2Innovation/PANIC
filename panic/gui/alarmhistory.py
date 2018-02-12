@@ -5,7 +5,7 @@ GPL Licensed
 """
 
 import panic, fandango
-from utils import *
+from .utils import *
 from taurus.qt.qtgui.panel import TaurusForm
 from operator import itemgetter
 
@@ -101,7 +101,7 @@ class alarmhistoryForm(object):
         pos=self.alarmCombo.currentIndex()
         self.alarmCombo.clear()
         self.alarms=self.panicApi.alarms
-        for a in self.alarms.items():
+        for a in list(self.alarms.items()):
             self.alarmCombo.addItem(self.alarms[a[0]].tag+': '+self.alarms[a[0]].formula)
         self.alarmCombo.model().sort(0, Qt.Qt.AscendingOrder)
         self.alarmCombo.insertItem(0,QtCore.QString('All'))
@@ -127,7 +127,7 @@ class alarmhistoryForm(object):
             if (alarm=='All'):
                 ctxs=[]
                 self.alarms=self.panicApi.alarms
-                for a in self.alarms.items():
+                for a in list(self.alarms.items()):
                     if(self.snapApi.db.search_context(self.alarms[a[0]].tag)):
                         ctx=self.snapApi.db.search_context(self.alarms[a[0]].tag)
                         for c in ctx: ctxs.append(c)
@@ -140,7 +140,7 @@ class alarmhistoryForm(object):
             data=[]
             for cid in cids:
                 ctx=self.snapApi.get_context(cid)
-                snaps=ctx.get_snapshots().values()
+                snaps=list(ctx.get_snapshots().values())
                 for s in snaps:
                     data.append([s[0],ctx.name,s[1]])
             data.sort(key=itemgetter(0), reverse=True)
@@ -195,7 +195,7 @@ class alarmhistoryForm(object):
                 self.ctx_id=c['id_context']
                 break
         self.ctx=self.snapApi.get_context(self.ctx_id)
-        res=sorted(self.ctx.get_snapshots().items(), reverse=True)
+        res=sorted(list(self.ctx.get_snapshots().items()), reverse=True)
         pos=0;
         for s in res:
             if str(s[1][0])==self.snap_date: break

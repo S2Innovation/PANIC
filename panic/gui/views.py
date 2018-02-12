@@ -40,7 +40,7 @@ class ViewRawBrowser(Qt.QTextBrowser):
             self.connect(self._timer,Qt.SIGNAL("timeout()"),
                          self.valueChanged)
             self._timer.start(refresh)
-            print('AlarmForm._timer(%s)'%refresh)
+            print(('AlarmForm._timer(%s)'%refresh))
         self.show()
         
     def valueChanged(self):
@@ -60,7 +60,7 @@ class ViewChooser(Qt.QDialog):
             views = ft.get_class_devices('PanicViewDS')
             views.append(ft.get_tango_host())
 
-        print('ViewChooser(%s)'%views)
+        print(('ViewChooser(%s)'%views))
         self.view = ''
         self.views = fd.dicts.SortedDict()
         for v in views:
@@ -76,7 +76,7 @@ class ViewChooser(Qt.QDialog):
         self.setLayout(Qt.QVBoxLayout())
         self.layout().addWidget(Qt.QLabel('Choose an AlarmView'))
         self.chooser = Qt.QComboBox()
-        self.chooser.addItems(self.views.keys())
+        self.chooser.addItems(list(self.views.keys()))
         self.layout().addWidget(self.chooser)
         self.button = Qt.QPushButton('Done')
         self.layout().addWidget(self.button)
@@ -91,7 +91,7 @@ class ViewChooser(Qt.QDialog):
         except:
             traceback.print_exc()
             self.view = 'err'
-        print('ViewChooser(%s) => %s'%(txt,self.view))
+        print(('ViewChooser(%s) => %s'%(txt,self.view)))
         return self.view
         
     def done(self,*args):

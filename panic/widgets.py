@@ -98,8 +98,8 @@ class GuiWidget(QtGui.QWidget):
 class AlarmValueLabel(Qt.QLabel):#TaurusValueLabel):
     
     def setModel(self,model):
-        print('AlarmValueLabel.setModel(%s(%s))'
-              %(type(model),str(model)))
+        print(('AlarmValueLabel.setModel(%s(%s))'
+              %(type(model),str(model))))
         if fandango.isString(model) and '/' not in model:
             model = str(model)
             self.alarm = panic.AlarmAPI(model)[model]
@@ -167,23 +167,23 @@ class ToolbarActionButton(TaurusBaseComponent, Qt.QPushButton):
         
     def setAlarmModel(self,tag):
         attr = self.api[tag].get_attribute(full=True)
-        print('In PanicToolbarAction.setAlarmModel(%s = %s)'%(tag,attr))
+        print(('In PanicToolbarAction.setAlarmModel(%s = %s)'%(tag,attr)))
         self.tag = tag
         self.setModel(attr)
 
     def setModel(self,model):
-        print('In PanicToolbarAction.setModel(%s)'%model)
+        print(('In PanicToolbarAction.setModel(%s)'%model))
         TaurusBaseComponent.setModel(self,model)
         self.setIcon(self.getIcon('OFF'))
 
     def getIcon(self,url):
-        print "ToolbarAction.getIcon(%s)"%url
+        print("ToolbarAction.getIcon(%s)"%url)
         if url in self.LEDS: url = self.LEDS[url]
         icon = taurus.qt.qtgui.resource.getIcon(url)
         return icon
 
     def handleEvent(self,evt_src,evt_type,evt_value):
-        print('In PanicToolbarAction.handleEvent(%s)'%self.getModel())
+        print(('In PanicToolbarAction.handleEvent(%s)'%self.getModel()))
         TaurusBaseComponent.handleEvent(self, evt_src, evt_type, evt_value)
         if all(hasattr(evt_value,a) for a in ('value','quality')):
             self.value = evt_value.value
@@ -228,17 +228,17 @@ class ToolbarActionButton(TaurusBaseComponent, Qt.QPushButton):
     def onAcknowledge(self):
         print('onAcknowledge')
         self.name=str(self.getModel().split('/')[-1]).strip(' ')
-        print(self.name)
+        print((self.name))
         if not taurus.Device(self.getModel().rsplit('/',1)[0]).command_inout('CheckAcknowledged',str(self.name)):
             prompt=QtGui.QInputDialog
             comment, ok=prompt.getText(self,'Input dialog','This will prevent reminders from sending.\nType a comment to continue:')
             if ok and len(str(comment)) > 3:
                 try:
                     comment=str(getpass.getuser())+': '+comment
-                    print('acknowledging %s with comment: %s !' %(self.name, comment))
+                    print(('acknowledging %s with comment: %s !' %(self.name, comment)))
                     taurus.Device(self.getModel().rsplit('/',1)[0]).command_inout('Acknowledge',[str(self.name), str(comment)])
                 except:
-                    print traceback.format_exc()
+                    print(traceback.format_exc())
             else:
                 Qt.QMessageBox.critical(self,"Error!",'Comment too short.\nAlarm not acknowledged.', QtGui.QMessageBox.AcceptRole, QtGui.QMessageBox.AcceptRole)
         elif not ok:
@@ -249,11 +249,11 @@ class ToolbarActionButton(TaurusBaseComponent, Qt.QPushButton):
     def onDisable(self):
         print('onDisable')
         self.name=str(self.getModel().split('/')[-1]).strip(' ')
-        print(self.name)
+        print((self.name))
         if not taurus.Device(self.getModel().rsplit('/',1)[0]).command_inout('CheckDisabled',str(self.name)):
             reply=Qt.QMessageBox.question(self,"Warning!","Alarm will be disabled.\nDo you want to continue?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
             if reply == QtGui.QMessageBox.Yes:
-                print('disable %s !' %self.name)
+                print(('disable %s !' %self.name))
                 comment='DISABLED by '+str(getpass.getuser())
                 taurus.Device(self.getModel().rsplit('/',1)[0]).command_inout('Disable', [str(self.name), str(comment)])
         else:
@@ -262,16 +262,16 @@ class ToolbarActionButton(TaurusBaseComponent, Qt.QPushButton):
     def onReset(self):
         print('onReset')
         self.name=str(self.getModel().split('/')[-1]).strip(' ')
-        print(self.name)
+        print((self.name))
         prompt=QtGui.QInputDialog
         comment, ok=prompt.getText(self,'Input dialog','This will reset the alarm.\nType a comment to continue:')
         if ok and len(str(comment)) > 3:
             try:
                 comment=str(getpass.getuser())+': '+comment
-                print('reseting %s with comment: %s !' %(self.name, comment))
+                print(('reseting %s with comment: %s !' %(self.name, comment)))
                 taurus.Device(self.getModel().rsplit('/',1)[0]).command_inout('ResetAlarm',[str(self.name), str(comment)])
             except:
-                print traceback.format_exc()
+                print(traceback.format_exc())
         elif not ok:
             pass
         else:
@@ -320,7 +320,7 @@ class PanicToolbar(TaurusBaseWidget, Qt.QToolBar):
                 if line.startswith(alarm+':'):
                     res = line.split(':')
                     break
-        except Exception,e:
+        except Exception as e:
             print ('Cant get the alarm date!')
         return res
             
@@ -329,14 +329,14 @@ class PanicToolbar(TaurusBaseWidget, Qt.QToolBar):
             if self.gui is None: self.gui = GuiWidget()
             self.gui.show()
           except:
-            print traceback.format_exc()
-            print 'AlarmGUI not available in PYTHONPATH'
+            print(traceback.format_exc())
+            print('AlarmGUI not available in PYTHONPATH')
             import os
             os.system('panic &')
           return self.gui 
 
     def setup(self,filters=None,api=None):#, alarms=None):
-        print "In PanicToolbar.setup(%s)"%filters
+        print("In PanicToolbar.setup(%s)"%filters)
         self.setMovable(True)
         self.setFloatable(True)
         filters = filters or self.filters
@@ -348,7 +348,7 @@ class PanicToolbar(TaurusBaseWidget, Qt.QToolBar):
         #We should never clear this list again
         
         if filters and filters not in self.filters:
-            if isinstance(filters,basestring): self.filters.append(filters)
+            if isinstance(filters,str): self.filters.append(filters)
             else: self.filters.extend(filters)
 
         self.filter_alarms()
@@ -367,15 +367,15 @@ class PanicToolbar(TaurusBaseWidget, Qt.QToolBar):
                     if any(fandango.functional.matchCl(f,a) for f in self.filters for a in (attrs if '/' in f else tags)):
                         self.alarms.append(alarm)
             except:
-                print 'In PanicToolbar.filter_alarms(): Unable to parse %s:\n%s'%(alarm,traceback.format_exc())
+                print('In PanicToolbar.filter_alarms(): Unable to parse %s:\n%s'%(alarm,traceback.format_exc()))
                 
-        if self.alarms: print 'In PanicToolbar.refresh(): %d alarms out of %d matches filters'%(len(self.alarms),len(self.api.keys()))
-        else: print 'In PanicToolbar.refresh(): no Alarm matches %s'%self.filters
+        if self.alarms: print('In PanicToolbar.refresh(): %d alarms out of %d matches filters'%(len(self.alarms),len(list(self.api.keys()))))
+        else: print('In PanicToolbar.refresh(): no Alarm matches %s'%self.filters)
         
         return self.alarms
 
     def refresh(self):
-        print 'In PanicToolbar.refresh(): filters = %s'%self.filters
+        print('In PanicToolbar.refresh(): filters = %s'%self.filters)
         
         if not self.filters: #(alarms!='*'):
             self.filters=[]
@@ -386,7 +386,7 @@ class PanicToolbar(TaurusBaseWidget, Qt.QToolBar):
         
         visible=0
         def sorter(obj):
-            print '%s -> %s' % (obj.tag, obj.active)
+            print('%s -> %s' % (obj.tag, obj.active))
             quality = self.api[obj.tag].get_quality()
             
             #full_attr_name = obj.device+'/'+obj.get_attribute()
@@ -409,7 +409,7 @@ class PanicToolbar(TaurusBaseWidget, Qt.QToolBar):
         qualities = dict((k,sorter(x)) for k,x in l)
         ordered = sorted(l,key=(lambda k: qualities[k[0]]))
         
-        [v.setModel('') for v in self.buttons.values()]
+        [v.setModel('') for v in list(self.buttons.values())]
         self.buttons.clear()
         self.clear()
         
@@ -417,13 +417,13 @@ class PanicToolbar(TaurusBaseWidget, Qt.QToolBar):
         self.addWidget(label)
         self.setToolTip("PanicToolbar: %s"%str(self.filters))
         url = os.path.dirname(panic.__file__)+'/'+"panic-icon.gif"
-        print '\t%s'%url
+        print('\t%s'%url)
         self.addAction(Qt.QIcon(url),'',self.showGui)
 
         for a,alarm in ordered:
             if (visible>=self.max_visible): break
             if a in self.buttons: continue
-            print 'In PanicToolbar.refresh(): adding %s'%alarm
+            print('In PanicToolbar.refresh(): adding %s'%alarm)
             self.buttons[a] = ToolbarActionButton(self.gui,self.api)
             model = alarm.device+'/'+alarm.get_attribute()
             self.buttons[a].setAlarmModel(a)
@@ -477,7 +477,7 @@ if __name__ == '__main__':
             tmw.setCentralWidget(label)
             tmw.show()
         tmw.setMinimumWidth(600)
-        print '*'*80
+        print('*'*80)
         tmw.setWindowTitle('Alarm Toolbar')
         toolbar = PanicToolbar(tmw,filters=filters)
         tmw.addToolBar(toolbar)

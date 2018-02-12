@@ -6,7 +6,7 @@ GPL Licensed
 
 import sys, re, os, traceback, time, json
 from pprint import pformat
-import threading, Queue
+import threading, queue
 
 import fandango as fn
 import fandango.tango as ft
@@ -70,7 +70,7 @@ search to a default value.
 
 OPEN_WINDOWS = []
 
-import utils as widgets
+from . import utils as widgets
 widgets.TRACE_LEVEL = -1
 
     ###########################################################################
@@ -146,7 +146,7 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
         self.snapi = None
         self.ctx_names = []
 
-        if not self.api.keys(): trace('NO ALARMS FOUND IN DATABASE!?!?')
+        if not list(self.api.keys()): trace('NO ALARMS FOUND IN DATABASE!?!?')
         #AlarmRow.TAG_SIZE = 1+max([len(k) for k in self.api] or [40])
         
         N = len(self.getAlarms())
@@ -200,11 +200,11 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
         # THIS METHOD WILL CHECK FOR CHANGES IN FILTERS (not only severities)
         try:
             if model!= self.regEx:
-                print('AlarmGUI.setModel(%s)'%model)
+                print(('AlarmGUI.setModel(%s)'%model))
                 self._ui.regExLine.setText(model or self.default_regEx)
                 self.onRegExUpdate()
         except:
-            print traceback.format_exc()
+            print(traceback.format_exc())
 
     ###########################################################################
     # AlarmList
@@ -241,7 +241,7 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
         # TO UPDATE FILTERS USE onRefresh INSTEAD
         try:
             trace('onReload(%s)'%self.RELOAD_TIME)
-            print '+'*80
+            print('+'*80)
             now = time.time()
             trace('%s -> AlarmGUI.onReload() after %f seconds'%(
               now,now-self.last_reload))
@@ -291,10 +291,10 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
         self._ui.statusLabel.setText(text)
         if not nones and self.splash:
             try: 
-                print 'closing splash ...'
+                print('closing splash ...')
                 self.splash.finish(None)
                 self.splash = None
-            except: print traceback.format_exc()          
+            except: print(traceback.format_exc())          
             
         return
       
@@ -312,7 +312,7 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
                 models = self.api.parse_attributes(a.formula)
                 devices = sorted(set(fn.tango.parse_tango_model(m)['device'] 
                                      for m in models))
-                print 'onItemSelected(%s): %s'%(a,devices)
+                print('onItemSelected(%s): %s'%(a,devices))
                 self.emit(Qt.SIGNAL('devicesSelected'),'|'.join(devices+tags))
         except: traceback.print_exc()      
             
@@ -346,7 +346,7 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
     
     def getSelectedAlarms(self,extend=False):
         rows = self.getSelectedItems(extend)
-        return filter(bool,(self.getCurrentAlarm(r) for r in rows))
+        return list(filter(bool,(self.getCurrentAlarm(r) for r in rows)))
       
     def getVisibleRows(self,margin=10):
         ql = self._ui.listWidget
@@ -354,8 +354,8 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
                 ql.visibleRegion().contains(
                   ql.visualItemRect(ql.item(i)))]
         if rows:
-            rows = range(max((0,rows[0]-margin)),
-                  min((ql.count(),rows[-1]+margin)))
+            rows = list(range(max((0,rows[0]-margin)),
+                  min((ql.count(),rows[-1]+margin))))
         return rows
       
     def setScrollHook(self,hook):
@@ -653,7 +653,7 @@ class QFilterGUI(QAlarmList):
         #dct = {'tag':regexp or self.default_regEx}
         #if not any(device,r
         if userfilter:
-            print('getFilters(%s)'%str(userfilter))
+            print(('getFilters(%s)'%str(userfilter)))
             ff = self.api.get_user_filters()[userfilter]
             filters.extend(ff)
             self._ui.comboBoxx.setToolTip(pformat(ff))
@@ -716,29 +716,29 @@ class QFilterGUI(QAlarmList):
         self._ui.comboBoxx.setEnabled(True)
         if source =='Devices':
             r,sort,values = 1,True,sorted(set(a.device 
-                                              for a in self.api.values()))
+                                              for a in list(self.api.values())))
             print(values)
         elif source =='Domain':
             r,sort,values = 1,True,sorted(set(a.device.split('/')[-3]
-                                              for a in self.api.values()))
+                                              for a in list(self.api.values())))
         elif source =='Family':
             devs = sorted(set(a.device for a in self.getAlarms()))
             values = sorted(set(a.device.split('/')[-2]
-                                              for a in self.api.values()))
-            print(devs,values)
+                                              for a in list(self.api.values())))
+            print((devs,values))
             r,sort,values = 1,True,values
             
         elif source in ('Annunciator','Receivers'):
             #r,sort,values = 2,True,list(set(a for a in self.api.phonebook.keys() for l in self.api.values() if a in l.receivers))
-            r,sort,values = 2,True,list(set(s for a in self.api.values() 
+            r,sort,values = 2,True,list(set(s for a in list(self.api.values()) 
                     for s in ['SNAP','SMS']+
                     [r.strip() for r in a.receivers.split(',') if r.strip()]))
             
         elif source =='Priority':
-            r,sort,values = 3,False,SEVERITIES.keys()
+            r,sort,values = 3,False,list(SEVERITIES.keys())
             
         elif source =='UserFilters':
-            r,sort,values = 3,False,['']+self.api.get_user_filters().keys()
+            r,sort,values = 3,False,['']+list(self.api.get_user_filters().keys())
             
         #@TODO
         #elif source =='Hierarchy':
@@ -752,7 +752,7 @@ class QFilterGUI(QAlarmList):
             ss = [''] #empty filter to use default_regEx instead
             ss.append('|'.join(ACTIVE_STATES))
             ss.append('|'.join(DISABLED_STATES))
-            ss.extend(AlarmStates.keys())
+            ss.extend(list(AlarmStates.keys()))
             r,sort,values = 0,False,ss
             
         self.setComboBox(self._ui.comboBoxx,values=values,sort=sort)
@@ -781,8 +781,8 @@ class QFilterGUI(QAlarmList):
     def onFilter(self,*args):
         """Forces an update of alarm list order and applies filters 
         (do not reload database)."""
-        print('onFilter() '+'*'*60)
-        print(self.getFilters())
+        print(('onFilter() '+'*'*60))
+        print((self.getFilters()))
         self.buildList(changed=True)
         self.showList()
         self.refreshTimer.setInterval(self.REFRESH_TIME)
@@ -806,7 +806,7 @@ class QFilterGUI(QAlarmList):
             text = 'Enter a name to save your filter in Tango Database'
             filters = self.api.get_user_filters()
             name, ok = QtGui.QInputDialog.getItem(self,'Save Filter As',
-                                        text,['']+filters.keys(),True)
+                                        text,['']+list(filters.keys()),True)
             if not ok: return
             if ok and len(str(name)) < min_comment:
                 raise Exception(comment_error)
@@ -821,7 +821,7 @@ class QFilterGUI(QAlarmList):
             filters.update({name:self.getFilters()})
             self.api.set_user_filters(filters,overwrite=True)
             self.onReload()
-        except Exception,e:
+        except Exception as e:
             #msg = traceback.format_exc()
             v = QtGui.QMessageBox.warning(self,'Warning',
                                         e.message,QtGui.QMessageBox.Ok)
@@ -893,7 +893,7 @@ class AlarmGUI(QFilterGUI):
             trace('showing splash ... %s'%px.size())
             
         except: 
-            print traceback.format_exc()
+            print(traceback.format_exc())
             
         if self.mainwindow:
             
@@ -981,7 +981,7 @@ class AlarmGUI(QFilterGUI):
         tmw.viewMenu.connect(tmw.viewMenu,
             Qt.SIGNAL('aboutToShow()'),alarmApp.setViewMenu)
         
-        from phonebook import PhoneBook
+        from .phonebook import PhoneBook
         alarmApp.tools['bookApp'] = WindowManager.addWindow(
             PhoneBook(container=tmw))
         tmw.toolsMenu.addAction(getThemeIcon("x-office-address-book"), 
@@ -1058,7 +1058,7 @@ class AlarmGUI(QFilterGUI):
             "View Raw",lambda s=self:alarmApp.tools['rawview'].setModel(self))
         [o.addAction(*alarm_panel_action) for o in (tmw.toolsMenu,toolbar)]          
             
-        print('Toolbars created after %s seconds'%(time.time()-t0))
+        print(('Toolbars created after %s seconds'%(time.time()-t0)))
         tmw.setCentralWidget(alarmApp)
         tmw.show()
         return tmw        
@@ -1108,12 +1108,12 @@ class AlarmGUI(QFilterGUI):
         #if not views or not any(views):
             #sys.exit(-1)
 
-        print '='*80
+        print('='*80)
         trace('launching AlarmGUI ... %s, %s'%(args,opts))
-        print '='*80
+        print('='*80)
         alarmApp = AlarmGUI(filters='|'.join(args),
                             options=opts,mainwindow=True)
-        print('AlarmGUI created after %s seconds'%(time.time()-t0))    
+        print(('AlarmGUI created after %s seconds'%(time.time()-t0)))    
         #alarmApp.tmw.show()
         n = uniqueapp.exec_()
 
@@ -1141,7 +1141,7 @@ class AlarmGUI(QFilterGUI):
     
     def printRows(self):
         for row in self._ui.listWidget.selectedItems():
-          print row.__repr__()
+          print(row.__repr__())
     
     def saveToFile(self):
         filename = str(Qt.QFileDialog.getSaveFileName(
@@ -1200,7 +1200,7 @@ class AlarmGUI(QFilterGUI):
             return filename
             
     def setViewMenu(self,action=None):
-        print 'In AlarmGUI.setViewMenu(%s)'%action
+        print('In AlarmGUI.setViewMenu(%s)'%action)
         self.mainwindow.viewMenu.clear()
         windows = WindowManager.getWindowsNames()
         for w in windows:

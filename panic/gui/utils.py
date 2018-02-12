@@ -33,7 +33,7 @@ def clean_str(s):
     return ' '.join(str(s).replace('\r',' ').replace('\n',' ').split())
 
 def print_clean(s):
-    print(clean_str(s))
+    print((clean_str(s)))
 
 try: TRACE_LEVEL = int(os.getenv('TRACE_LEVEL',-1))
 except: TRACE_LEVEL = (traceback.print_exc(),-1)[-1]
@@ -46,7 +46,7 @@ def trace(msg,head='',level=0,clean=False,use_taurus=False):
         if not dummies: 
             dummies.append(Logger())
             dummies[0].setLogLevel('INFO')
-        print dummies[0]
+        print(dummies[0])
         dummies[0].info(msg)
         dummies[0].error(msg)
     else:
@@ -66,8 +66,8 @@ def setCheckBox(cb,v):
         cb.setChecked(v)
         cb.blockSignals(False)
     except:
-        print 'Failed to setCheckBox(%s,%s)'%(cb,v)
-        print traceback.format_exc()
+        print('Failed to setCheckBox(%s,%s)'%(cb,v))
+        print(traceback.format_exc())
         
 def getWidgetText(widget,trace=True):
     """ helper to catch encoding exceptions in forms """
@@ -77,7 +77,7 @@ def getWidgetText(widget,trace=True):
           msg = str(widget.toPlainText())
         else:
           msg = str(widget)
-    except Exception,e:
+    except Exception as e:
         if 'unicode' in str(e).lower():
             #v = QtGui.QMessageBox.warning(None,'Wrong characters', \
                 #'PANIC properties accept only ASCII characters, '
@@ -93,7 +93,7 @@ def getWidgetText(widget,trace=True):
         else:
             #QtGui.QMessageBox.warning(None,'Wrong text',str(e))
             raise e
-    if trace: print('*'*80+'\n'+'%s => %s'%(widget,msg))
+    if trace: print(('*'*80+'\n'+'%s => %s'%(widget,msg)))
     return msg
     
 def getAlarmTimestamp(alarm,attr_value=None,use_taurus=True):
@@ -115,7 +115,7 @@ def getAlarmTimestamp(alarm,attr_value=None,use_taurus=True):
                 #(as it is used to set alarm.active)
     
 def getAlarmReport(alarm,parent=None):
-    print 'getAlarmReport(%s(%s))'%(type(alarm),alarm)
+    print('getAlarmReport(%s(%s))'%(type(alarm),alarm))
     try:
         if type(alarm) is panic.Alarm:
             alarm = alarm
@@ -138,7 +138,7 @@ def getAlarmReport(alarm,parent=None):
     widget.setLayout(Qt.QVBoxLayout())
     msg = 'Last %s report:'%alarm.tag
     widget.setWindowTitle(msg)
-    print '%s\n%s'%(msg,details)
+    print('%s\n%s'%(msg,details))
     widget.layout().addWidget(Qt.QLabel(msg))
     tb = Qt.QTextBrowser(widget)
     tb.setPlainText(details)
@@ -208,15 +208,15 @@ class iValidatedWidget(object):
     def init(self,tag=''):
       
         if not hasattr(self,'validator'):
-          print('>#'*40)
+          print(('>#'*40))
           self.UserValidator,self.validator = '',None
           log,p = '',str(sys.path)
           try:
               props = self.api.servers.db.get_class_property(
                   'PyAlarm',['UserValidator','PanicAdminUsers'])
               self.UserValidator = fandango.first(props['UserValidator'],'')
-              self.AdminUsers = filter(bool,
-                                       map(str.strip,props['PanicAdminUsers']))
+              self.AdminUsers = list(filter(bool,
+                                       list(map(str.strip,props['PanicAdminUsers']))))
               if self.UserValidator:
                 mod,klass = self.UserValidator.rsplit('.',1)
                 mod = fandango.objects.loadModule(mod)
@@ -228,19 +228,18 @@ class iValidatedWidget(object):
                             'PyAlarm','PanicLogFile') or [''])[0]
                     if log: self.validator.setLogging(True,log)
                 except:
-                    print('Unable to write log %s'%log)
+                    print(('Unable to write log %s'%log))
                     traceback.print_exc()
           except:
               traceback.print_exc()
-              print('iValidateWidget: %s module not found in %s'
-                    %(self.UserValidator or 'PyAlarm.UserValidator',p))
+              print(('iValidateWidget: %s module not found in %s'
+                    %(self.UserValidator or 'PyAlarm.UserValidator',p)))
               return -1
 
         if self.AdminUsers and not self.UserValidator:
-            print(self.AdminUsers,self.UserValidator)
-            raise Exception,\
-                'iValidateWidget(PanicAdminUsers):'\
-                    ' UserValidator property not defined'
+            print((self.AdminUsers,self.UserValidator))
+            raise Exception('iValidateWidget(PanicAdminUsers):'\
+                    ' UserValidator property not defined')
             return -1
         if not self.AdminUsers and not self.UserValidator:
             #passwords not available
@@ -275,7 +274,7 @@ class iValidatedWidget(object):
           if err == -1:
             msg = "%s module not found"%(
                 self.UserValidator or 'PyAlarm.UserValidator')
-            print('iValidateWidget: %s'%msg)
+            print(('iValidateWidget: %s'%msg))
             Qt.QMessageBox.critical(None,
                 "Error!",msg,
                 QtGui.QMessageBox.AcceptRole, QtGui.QMessageBox.AcceptRole)
@@ -330,15 +329,15 @@ class WindowManager(fandango.objects.Singleton):
         if w: (w.hide(),w.show())
     @classmethod
     def closeAll(klass):
-        print 'In WindowManager.closeAll(%s)'%klass
+        print('In WindowManager.closeAll(%s)'%klass)
         for w in klass.WINDOWS:
             try: w.close()
-            except Exception,e: '%s.close() failed: %s'%(w,e)
+            except Exception as e: '%s.close() failed: %s'%(w,e)
     def closeKlass(klass,target):
         for w in klass.WINDOWS:
             if isinstance(w,target):
                 try: w.close()
-                except Exception,e: '%s.close() failed: %s'%(w,e)
+                except Exception as e: '%s.close() failed: %s'%(w,e)
 
 class CleanMainWindow(Qt.QMainWindow,WindowManager):
     def closeEvent(self,event): 
@@ -361,7 +360,7 @@ def get_snap_api():
           assert list(db.get_device_exported_for_class('SnapManager'))
           SNAP_ALLOWED = snap.SnapAPI()
           
-      except Exception,e:
+      except Exception as e:
           trace('PyTangoArchiving.Snaps not available: '\
               'HISTORY VIEWER DISABLED: '+traceback.format_exc(),'WARNING',-1)
           SNAP_ALLOWED = None
@@ -398,8 +397,8 @@ def get_archive_trend(models=None,length=4*3600,show=False):
         if show: tt.show()
         tt.setWindowTitle('Trend')
     except:
-        print 'Exception in set_pressure_trend(%s)'%tt
-        print traceback.format_exc()
+        print('Exception in set_pressure_trend(%s)'%tt)
+        print(traceback.format_exc())
     return tt
         
 ###############################################################################
@@ -429,7 +428,7 @@ class AlarmFormula(Qt.QSplitter): #Qt.QFrame):
             
         self.device = device or getattr(self.obj,'device',None)
         self._locals = device and \
-            dict(zip('DOMAIN FAMILY MEMBER'.split(),self.device.split('/'))) \
+            dict(list(zip('DOMAIN FAMILY MEMBER'.split(),self.device.split('/')))) \
                 or {}
         
     @staticmethod
@@ -441,7 +440,7 @@ class AlarmFormula(Qt.QSplitter): #Qt.QFrame):
         return d
         
     def initStyle(self,show=False):
-        print 'In AlarmFormula.initStyle(%s)' %(self.obj or self.formula)
+        print('In AlarmFormula.initStyle(%s)' %(self.obj or self.formula))
         try:
             self.org_formula = self.formula
             self.setChildrenCollapsible(False)
@@ -500,13 +499,13 @@ class AlarmFormula(Qt.QSplitter): #Qt.QFrame):
             #Refresh from formula:
             if self.formula: self.updateFormula(self.formula)
             if show: self.show()
-            print 'AlarmFormula.initStyle(%s) finished.'%self.formula
+            print('AlarmFormula.initStyle(%s) finished.'%self.formula)
         except:
-            print traceback.format_exc()
-            print 'Unable to show AlarmFormula(%s)'%self.formula
+            print(traceback.format_exc())
+            print('Unable to show AlarmFormula(%s)'%self.formula)
             
     def onEdit(self,checked=True):
-        print 'In AlarmFormula.onEdit(%s)'%checked
+        print('In AlarmFormula.onEdit(%s)'%checked)
         self.tf.setReadOnly(not checked)
         self.tf.setEnabled(checked)
         #Order is not trivial, to avoid recursion
@@ -518,7 +517,7 @@ class AlarmFormula(Qt.QSplitter): #Qt.QFrame):
         else: self.emit(Qt.SIGNAL("onReadOnly()"))
         
     def onSave(self,ask=False):
-        print 'In AlarmFormula.onSave()'
+        print('In AlarmFormula.onSave()')
         if ask:
             v = QtGui.QMessageBox.warning(None,'Pending Changes', \
                 'Do you want to save %s changes?'%self.obj.tag, \
@@ -530,7 +529,7 @@ class AlarmFormula(Qt.QSplitter): #Qt.QFrame):
         self.emit(Qt.SIGNAL("onSave"),self.obj)
         
     def onClose(self):
-        print 'In AlarmFormula.onClose()'
+        print('In AlarmFormula.onClose()')
         if self.obj and self.toPlainText()!=self.org_formula:
             v = QtGui.QMessageBox.warning(None,'Pending Changes', \
                 '%s Formula has been modified, '\
@@ -541,7 +540,7 @@ class AlarmFormula(Qt.QSplitter): #Qt.QFrame):
         self.emit(Qt.SIGNAL("onClose()"))
         
     def undoEdit(self):
-        print 'In AlarmFormula.undoEdit()'
+        print('In AlarmFormula.undoEdit()')
         self.updateFormula(self.org_formula)
         if self.editcb.isChecked(): self.onEdit(False)
         
@@ -569,8 +568,8 @@ class AlarmFormula(Qt.QSplitter): #Qt.QFrame):
         self.formula = formula or multiline2line(text)
         self.tf.setPlainText(line2multiline(self.formula))
         if self.org_formula is None: self.org_formula = formula
-        print('In AlarmFormula.updateFormula(%s,changed=%s)'
-              %(self.formula,formula!=self.org_formula))
+        print(('In AlarmFormula.updateFormula(%s,changed=%s)'
+              %(self.formula,formula!=self.org_formula)))
         if self.formula: 
             self.test.formula = self.api.replace_alarms(self.formula)
         if parse: 
@@ -580,24 +579,24 @@ class AlarmFormula(Qt.QSplitter): #Qt.QFrame):
         return self.test.formula
             
     def updateResult(self,formula = ''):
-        print('In AlarmFormula.updateResult(%s(%s))'%(type(formula),formula))
+        print(('In AlarmFormula.updateResult(%s(%s))'%(type(formula),formula)))
         formula = self.updateFormula(formula,parse=not self.device)
         if self.org_formula and formula!=self.org_formula: 
             print('\tformula changed!')
-        print('\n'.join(map(str,zip('obj device formula test'.split(),
-                        (self.obj,self.device,formula,self.test.formula)))))
+        print(('\n'.join(map(str,list(zip('obj device formula test'.split(),
+                        (self.obj,self.device,formula,self.test.formula)))))))
         if formula:
             try:
                 result = '%s: %s'%(self.device,
                     self.api.evaluate(
                         formula if self.device else self.test.formula,
                         device=self.device,timeout=10000,_locals=self._locals))
-            except Exception,e: 
+            except Exception as e: 
                 result = '%s: %s: %s' % (self.device,type(e).__name__,e)
-                print result
+                print(result)
         else:
             result = traceback.format_exc()
-            print result
+            print(result)
         self.tb.setPlainText('%s'%result)
         self.tb.setParent(self,Qt.Qt.Dialog)
         self.tb.setWindowModality(Qt.Qt.WindowModal)
@@ -617,7 +616,7 @@ class AttributesPreview(Qt.QFrame):
         self.updateAttributes(self.model)
         
     def initStyle(self):
-        print 'In AttributesPreview.initStyle()'
+        print('In AttributesPreview.initStyle()')
         try:
             self.setLayout(Qt.QGridLayout())
             self.redobt = Qt.QPushButton()
@@ -634,17 +633,17 @@ class AttributesPreview(Qt.QFrame):
             self.connect(self.redobt,Qt.SIGNAL('pressed()'),
                          self.updateAttributes)
         except:
-            print traceback.format_exc()
+            print(traceback.format_exc())
             
     def updateAttributes(self,model=None):
-        print('AttributesPreview.updateAttributes(%s)'%model)
+        print(('AttributesPreview.updateAttributes(%s)'%model))
         if not model and self.source:
             try:
                 if hasattr(self.source,'formula'): model = self.source.formula
                 elif hasattr(self.source,'__call__'): model = self.source()
                 else: model = str(self.source or '')
-            except: print(traceback.format_exc())
-        print 'In AttributesPreview.updateAttributes(%s)'%model
+            except: print((traceback.format_exc()))
+        print('In AttributesPreview.updateAttributes(%s)'%model)
         if fandango.isSequence(model): 
             model = sorted(model)
         else: 
@@ -680,7 +679,7 @@ class AlarmPreview(Qt.QDialog):
         
     @staticmethod
     def showEmptyAlarmPreview(gui=None):
-        print('In AlarmPreview.showEmptyAlarmPreview(%s)'%type(gui))
+        print(('In AlarmPreview.showEmptyAlarmPreview(%s)'%type(gui)))
         form = getattr(gui,'_AlarmFormulaPreview',None) or AlarmPreview()
         form.setModal(False)
         if not gui:
@@ -697,7 +696,7 @@ class AlarmPreview(Qt.QDialog):
         #tag = getattr(tag,'tag',tag) or self.tag
         #formula = formula or getattr(obj,'formula','') or self.formula
         self.org_formula = formula
-        print 'In AlarmPreview.updateStyle(%s,%s)' %(tag,formula)
+        print('In AlarmPreview.updateStyle(%s,%s)' %(tag,formula))
         try:
             self.setLayout(Qt.QVBoxLayout())
             self.setMinimumSize(500, 500)
@@ -715,11 +714,11 @@ class AlarmPreview(Qt.QDialog):
             #upperPanel.updateFormula(formula)
             if self.upperPanel.formula: self.lowerPanel.updateAttributes()
             if show: self.show()
-            print 'AlarmGUI.showAlarmPreview(%s) finished.'%tag
-            print self.frame.sizes()
+            print('AlarmGUI.showAlarmPreview(%s) finished.'%tag)
+            print(self.frame.sizes())
         except:
-            print traceback.format_exc()
-            print 'Unable to showAlarmPreview(%s)'%tag
+            print(traceback.format_exc())
+            print('Unable to showAlarmPreview(%s)'%tag)
             
     def closeEvent(self,event):
         self.upperPanel.onClose()

@@ -88,7 +88,7 @@ def anyendswith(a,b):
 
 def unicode2str(obj):
     if isMapping(obj,strict=True):
-        n = dict(unicode2str(t) for t in obj.items())
+        n = dict(unicode2str(t) for t in list(obj.items()))
     elif isSequence(obj):
         n = list(unicode2str(t) for t in obj)
     elif isString(obj): n = str(obj)
@@ -109,7 +109,7 @@ def getAttrValue(obj,default=Exception):
     if isCallable(rm):
         try:
             obj = rm()
-        except Exception,e:
+        except Exception as e:
             obj = e
             
     if default is Exception:
@@ -135,14 +135,14 @@ def getAttrValue(obj,default=Exception):
 
 def getAlarmDeviceProperties(device):
     """ Method used in all panic classes """
-    props = _TANGO.get_device_property(device,ALARM_TABLES.keys())
+    props = _TANGO.get_device_property(device,list(ALARM_TABLES.keys()))
 
     #Updating old property names for backwards compatibility
     if not props['AlarmList']:
         props['AlarmList'] = _TANGO.get_device_property(
                                   device,['AlarmsList'])['AlarmsList']
         if props['AlarmList']:
-            print '%s: AlarmsList property renamed to AlarmList'%device
+            print('%s: AlarmsList property renamed to AlarmList'%device)
             _TANGO.put_device_property(
                     device,{'AlarmList':props['AlarmList'],'AlarmsList':[]})
             
@@ -195,7 +195,7 @@ class Alarm(object):
         if write: self.write()
         
     def trace(self,msg):
-        print('%s: Alarm(%s): %s'%(fn.time2str(),self.tag,msg))
+        print(('%s: Alarm(%s): %s'%(fn.time2str(),self.tag,msg)))
 
     def clear(self):
         """ This method just initializes Flags updated from PyAlarm devices, 
@@ -332,7 +332,7 @@ class Alarm(object):
             self.last_error = shortstr(state)
             state = 'state=ERROR;desc=%s'%shortstr(state)
             
-        elif state in AlarmStates.values():
+        elif state in list(AlarmStates.values()):
             state = AlarmStates.get_key(state)
             
         elif isNumber(state):
@@ -563,8 +563,8 @@ class Alarm(object):
                     config = config.replace(',',';')
                 config = dict(s.split(':') for s in config.split(';'))
             except: 
-                print('Alarm(%s): Unable to parse config(%s):\n%s'
-                      %(tag,config,traceback.format_exc()))
+                print(('Alarm(%s): Unable to parse config(%s):\n%s'
+                      %(tag,config,traceback.format_exc())))
                 config = {}
         else:
             config = {}
@@ -632,8 +632,8 @@ class Alarm(object):
             tag = new_line.split(':',1)[0]
             for l in lines:
                 if l.startswith(tag+':') and l!=new_line:
-                    print('In Alarm(%s).write(): line updated: %s' 
-                          % (tag,new_line))
+                    print(('In Alarm(%s).write(): line updated: %s' 
+                          % (tag,new_line)))
                     new_lines.append(new_line)
                     added = True
                 elif (not (exclude and re.match(exclude, l)) 
@@ -641,7 +641,7 @@ class Alarm(object):
                     new_lines.append(l)
                     
             if not added and new_line not in new_lines: 
-                print('In Alarm(%s).write(): line added: %s'%(tag,new_line))
+                print(('In Alarm(%s).write(): line added: %s'%(tag,new_line)))
                 new_lines.append(new_line)
             return new_lines
 
@@ -720,7 +720,7 @@ class Alarm(object):
         
     def to_str(self,keys=None):
         d = self.to_dict(keys)
-        keys = keys or d.keys()
+        keys = keys or list(d.keys())
         s = ';'.join('%s=%s'%(k,d[k]) for k in keys)
         return s
 
@@ -747,7 +747,7 @@ class AlarmDS(object):
             self.get().init()
             self.config = None
         except:
-            print 'Device %s is not running' % self.name            
+            print('Device %s is not running' % self.name)            
         
     def read(self,filters='*'):
         """ 
@@ -763,7 +763,7 @@ class AlarmDS(object):
                 #print('read:pass')
                 continue
             try:
-                tag,formula = map(str.strip,line.split(':',1))
+                tag,formula = list(map(str.strip,line.split(':',1)))
                 self.alarms[tag] = {'formula':formula}
                 try: 
                     local_receivers = [r for r in props['AlarmReceivers'] 
@@ -789,7 +789,7 @@ class AlarmDS(object):
                 except: 
                     self.alarms[tag]['severity'] = DEFAULT_SEVERITY
             except:
-                print('Unparsable Alarm!: %s' % line)
+                print(('Unparsable Alarm!: %s' % line))
         #print('%s device manages %d alarms: %s'
         #   %(self.name,len(self.alarms),self.alarms.keys()))
         return self.alarms        
@@ -802,7 +802,7 @@ class AlarmDS(object):
     def get_config(self,update=False):
         if not getattr(self,'config',None) or update: 
             props = self.api.get_db_properties(self.name,ALARM_CONFIG)
-            for p,v in props.items():
+            for p,v in list(props.items()):
                 if v in (False,True):
                     props[p] = v
                 elif v and v[0] not in ('',None):
@@ -810,7 +810,7 @@ class AlarmDS(object):
                 else: #Using default property value
                     try: 
                         props[p] = (PyAlarmDefaultProperties[p][-1] or [''])[0]
-                    except: print traceback.format_exc()
+                    except: print(traceback.format_exc())
             self.config = props
         return self.config
                     
@@ -823,13 +823,13 @@ class AlarmDS(object):
                        
     def get_alarm_properties(self):
         """ Method used in all panic classes """
-        props = self.api.get_db_properties(self.name,ALARM_TABLES.keys())
+        props = self.api.get_db_properties(self.name,list(ALARM_TABLES.keys()))
         #Updating old property names
         if not props['AlarmList']:
             props['AlarmList'] = \
                 self.api.get_db_property(self.name,'AlarmsList')
             if props['AlarmList']:
-                print('%s:AlarmsList property renamed to AlarmList'%self.name)
+                print(('%s:AlarmsList property renamed to AlarmList'%self.name))
                 self.api.put_db_properties(self.name,
                     {'AlarmList':props['AlarmList'],'AlarmsList':[]})
                 
@@ -868,7 +868,7 @@ class AlarmDS(object):
             model = self.name+'/alarmsummary'
         else:
             model = self.name+'/activealarms'
-        print('%s.get_model(%s): %s'%(self.name,v,model))
+        print(('%s.get_model(%s): %s'%(self.name,v,model)))
         return model.lower()    
     
     def ping(self):
@@ -895,10 +895,10 @@ class AlarmDS(object):
         if tag is None:
             self.api.put_db_property(self.name,'Enabled',True)
             self.init()
-            print('%s: Enabled!' %self.name)
+            print(('%s: Enabled!' %self.name))
         else:
             tags = [a for a in self.alarms if matchCl(tag,a)]
-            print('%s: Enabling %d alarms: %s' % (self.name,len(tags),tags))
+            print(('%s: Enabling %d alarms: %s' % (self.name,len(tags),tags)))
             [self.get().Enable([str(a)]) for t in tags]
                     
     def disable(self,tag=None,comment=None,timeout=None):
@@ -907,10 +907,10 @@ class AlarmDS(object):
         if tag is None:
             self.api.put_db_property(self.name,'Enabled',False)
             self.init()
-            print('%s: Disabled!' %self.name)
+            print(('%s: Disabled!' %self.name))
         else:
             tags = [a for a in self.alarms if matchCl(tag,a)]
-            print('%s: Disabling %d alarms: %s'%(self.name,len(tags),tags))
+            print(('%s: Disabling %d alarms: %s'%(self.name,len(tags),tags)))
             [self.get().Disable(
               [str(a) for a in (t,comment,timeout) if a is not None]) 
               for t in tags]    
@@ -923,7 +923,7 @@ class AlarmDS(object):
         if value is None:
             try:
                 value = getAttrValue(self._actives.read(),None)
-            except Exception,e:
+            except Exception as e:
                 return e
             
         if not value: return {}
@@ -984,8 +984,8 @@ class AlarmDS(object):
         try:
             return (False if self.get().ResetAlarm(args) else True)
         except:
-            print 'Device %s is not running' % self.name
-            print traceback.format_exc()
+            print('Device %s is not running' % self.name)
+            print(traceback.format_exc())
             return None            
 
     def acknowledge(self,alarm,comment):
@@ -999,8 +999,8 @@ class AlarmDS(object):
         try:
             return (False if self.get().Acknowledge(args) else True)
         except:
-            print 'Device %s is not running' % self.name
-            print traceback.format_exc()
+            print('Device %s is not running' % self.name)
+            print(traceback.format_exc())
             return None
     
     def __repr__(self):
@@ -1067,9 +1067,9 @@ class AlarmAPI(fandango.SingletonMap):
 
     def __len__(self): return self.alarms.__len__()
     def __iter__(self): return self.alarms.__iter__()
-    def keys(self): return self.alarms.keys()
-    def values(self): return self.alarms.values()
-    def items(self): return self.alarms.items()
+    def keys(self): return list(self.alarms.keys())
+    def values(self): return list(self.alarms.values())
+    def items(self): return list(self.alarms.items())
 
     def load(self,filters=None,exported=False,extended=False):
         """
@@ -1095,8 +1095,8 @@ class AlarmAPI(fandango.SingletonMap):
         all_devices = []
         all_servers = []
         for cl in ('PyAlarm','PanicEngineDS','PanicViewDS'):
-            all_devices.extend(map(str.lower,dbd.DbGetDeviceList(['*',cl])))
-            all_servers.extend(map(str.lower,dbd.DbGetServerList(cl+'/*')))
+            all_devices.extend(list(map(str.lower,dbd.DbGetDeviceList(['*',cl]))))
+            all_servers.extend(list(map(str.lower,dbd.DbGetServerList(cl+'/*'))))
 
         if exported:
             dev_exported = fandango.get_all_devices(
@@ -1138,7 +1138,7 @@ class AlarmAPI(fandango.SingletonMap):
                 
         tprops=(time.time()-tprops)
         self.log('\t%d PyAlarm devices loaded, %d alarms'%(
-            len(self.devices),sum(len(v) for v in all_alarms.values())))
+            len(self.devices),sum(len(v) for v in list(all_alarms.values()))))
         
         ######################################################################
 
@@ -1147,10 +1147,10 @@ class AlarmAPI(fandango.SingletonMap):
         self.get_phonebook(load=True)
         
         #Verifying that previously loaded alarms still exist
-        for k,v in self.alarms.items()[:]:
+        for k,v in list(self.alarms.items())[:]:
           found = False
           
-          for d,vals in all_alarms.items():
+          for d,vals in list(all_alarms.items()):
               if d.lower() == v.device.lower():
                   if k in vals:
                       found = True
@@ -1165,7 +1165,7 @@ class AlarmAPI(fandango.SingletonMap):
         #Updating alarms dictionary
         for d,vals in sorted(all_alarms.items()):
           
-            for k,v in vals.items():
+            for k,v in list(vals.items()):
                 self.log('Loading alarm %s.%s (new=%s): %s'%(
                   d,k,k not in self.alarms,v))
                 
@@ -1213,18 +1213,18 @@ class AlarmAPI(fandango.SingletonMap):
             alarms[line['tag']] = dict([('load',False)]
                 +[(k,line.get(k)) for k in CSV_FIELDS] )
             
-        loaded = alarms.keys()[:]
+        loaded = list(alarms.keys())[:]
         for i,tag in enumerate(loaded):
             new,old = alarms[tag],self.alarms.get(tag,None)
             if old and all(new.get(k)==getattr(old,k) 
                            for k in CSV_FIELDS):
                 alarms.pop(tag)
             elif write:
-                print('%d/%d: Loading %s from %s: %s'%(
-                  i,len(loaded),tag,filename,new))
+                print(('%d/%d: Loading %s from %s: %s'%(
+                  i,len(loaded),tag,filename,new)))
                 
         if write:
-            devs = set(v['device'] for v in alarms.values())
+            devs = set(v['device'] for v in list(alarms.values()))
             for d in devs:
                 if d not in self.devices:
                     raise Exception('PyAlarm %s does not exist!'%d)
@@ -1246,7 +1246,7 @@ class AlarmAPI(fandango.SingletonMap):
         alarms = self.filter_alarms(regexp,alarms=alarms)
         columns = CSV_FIELDS + (['ACTIVE'] if states else [])
         csv.resize(1+len(alarms),len(CSV_FIELDS))
-        csv.setRow(0,map(str.upper,CSV_FIELDS))
+        csv.setRow(0,list(map(str.upper,CSV_FIELDS)))
         
         for i,(d,alarm) in enumerate(sorted((a.device,a) for a in alarms)):
             row = [getattr(alarm,k) for k in CSV_FIELDS]
@@ -1266,14 +1266,14 @@ class AlarmAPI(fandango.SingletonMap):
         data = dict((a.tag,a.to_dict()) for a in alarms)
 
         if states:
-          for a,s in data.items():
+          for a,s in list(data.items()):
             s['active'] = self[a].get_active()
             s['date'] = time2str(s['active'])
             
         if config:
           data = {'alarms':data}
           data['devices'] = dict((d,t.get_config()) 
-                                 for d,t in self.devices.items())
+                                 for d,t in list(self.devices.items()))
           
         return data
         
@@ -1282,7 +1282,7 @@ class AlarmAPI(fandango.SingletonMap):
         Updates devices properties values from a .csv file
         """
         csv = fandango.CSVArray(filename,header=0,comment='#',offset=1)
-        print 'Loading %s file'%filename
+        print('Loading %s file'%filename)
         for i in range(csv.size()[0]):
             l = csv.getd(i)
             if not matchCl(l['Host'],self.tango_host): 
@@ -1292,10 +1292,10 @@ class AlarmAPI(fandango.SingletonMap):
             if (not d or d not in self.devices 
                 or regexp and not matchCl(regexp,d)):
                 continue
-            diff = [k for k,v in self.devices[d].get_config().items() 
+            diff = [k for k,v in list(self.devices[d].get_config().items()) 
                 if str(v).lower()!=str(l[k]).lower()]
             if diff:
-                print 'Updating %s properties: %s'%(d,diff)
+                print('Updating %s properties: %s'%(d,diff))
                 self.put_db_properties(d,dict((k,[l[k]]) for k in diff))
                 self.devices[d].init()
         return
@@ -1305,17 +1305,17 @@ class AlarmAPI(fandango.SingletonMap):
         Save devices property values to a .csv file
         """
         lines = [['Host','Device']+ALARM_CONFIG]
-        for d,v in self.devices.items():
+        for d,v in list(self.devices.items()):
             if regexp and not matchCl(regexp,d): continue
             c = v.get_config()
             lines.append([self.tango_host,d]+[str(c[k]) for k in ALARM_CONFIG])
         open(filename,'w').write('\n'.join('\t'.join(l) for l in lines))
-        print '%s devices exported to %s'%(len(lines),filename)
+        print('%s devices exported to %s'%(len(lines),filename))
         
     def has_tag(self,tag,raise_=False):
         """ check for tags is case independent """
-        nt = first((k for k in self.keys() if k.lower()==tag.lower()),None)
-        if raise_ and nt is None: raise('TagDoesntExist:%s'%tag)
+        nt = first((k for k in list(self.keys()) if k.lower()==tag.lower()),None)
+        if raise_ and nt is None: raise 'TagDoesntExist:%s'
         return nt
 
     def save_tag(self,tag):
@@ -1355,7 +1355,7 @@ class AlarmAPI(fandango.SingletonMap):
         elif ref.count('/')>=2:
           return self.servers.db.get_device_property(ref,props)
         else:
-          raise Exception,'Unknown %s'%ref      
+          raise Exception('Unknown %s'%ref)      
      
     def get_db_property(self,ref,prop):
         return list(self.get_db_properties(ref,[prop])[prop])
@@ -1366,7 +1366,7 @@ class AlarmAPI(fandango.SingletonMap):
         elif ref.count('/')>=2:
           self.servers.db.put_device_property(ref,props)
         else:
-          raise Exception,'Unknown %s'%ref
+          raise Exception('Unknown %s'%ref)
     
     def put_db_property(self,ref,prop,value):
         if not isSequence(value): value = [value]
@@ -1387,9 +1387,9 @@ class AlarmAPI(fandango.SingletonMap):
                 line = line.split('#',1)[0]
                 if line: ph[line.split(':',1)[0]]=line.split(':',1)[-1]
             #Replacing nested keys
-            for k,v in ph.items():
+            for k,v in list(ph.items()):
                 for s in v.split(','):
-                    for x,w in ph.items():
+                    for x,w in list(ph.items()):
                         if s==x: ph[k] = v.replace(s,w)
             self.phonebook = ph
         return self.phonebook
@@ -1428,15 +1428,15 @@ class AlarmAPI(fandango.SingletonMap):
         lines = [line.strip().split(':',1)[0].upper() for line in prop]
         if name in lines: #Replacing
             index = lines.index(name)
-            print('AlarmAPI.edit_phonebook(%s,%s,%s), replacing at [%d]'%(
-              tag,value,section,index))
+            print(('AlarmAPI.edit_phonebook(%s,%s,%s), replacing at [%d]'%(
+              tag,value,section,index)))
             prop = prop[:index]+[value]+prop[index+1:]
         else: #Adding
             if section and '#' not in section: section = '#%s'%section
             index = len(lines) if not section or section not in lines \
                     else lines.index(section)+1
-            print('AlarmAPI.edit_phonebook(%s,%s,%s), adding at [%d]'%(
-              tag,value,section,index))
+            print(('AlarmAPI.edit_phonebook(%s,%s,%s), adding at [%d]'%(
+              tag,value,section,index)))
             prop = prop[:index]+[value]+prop[index:]
             
         self.save_phonebook(prop)
@@ -1468,7 +1468,7 @@ class AlarmAPI(fandango.SingletonMap):
             prevs.update(filters)
             filters = prevs
         value = []
-        for name,f in filters.items():
+        for name,f in list(filters.items()):
             value.append('%s:%s'%(name,f if isString(f) else json.dumps(f)))
         self.put_db_property('PANIC','UserFilters',value)
       
@@ -1494,7 +1494,7 @@ class AlarmAPI(fandango.SingletonMap):
                 rows.append(line[-1])
             return ','.join(rows)
         except:
-          print('>>> Exception at get_global_receivers(%s)'%tag)
+          print(('>>> Exception at get_global_receivers(%s)'%tag))
           traceback.print_exc()
           return ''
         
@@ -1517,7 +1517,7 @@ class AlarmAPI(fandango.SingletonMap):
           if '/' in e:
               attrs.extend(d+'/'+a 
                   for dev,attr in [e.rsplit('/',1)] 
-                  for d,dd in self.devices.items() 
+                  for d,dd in list(self.devices.items()) 
                   for a in dd.alarms 
                   if matchCl(dev,d) and matchCl(attr,a))
           else:
@@ -1567,7 +1567,7 @@ class AlarmAPI(fandango.SingletonMap):
         #It's redundant to check for the terminal character, re already does it
         var = re.findall(alnum,formula)
         #print '\tparse_alarms(%s): %s'%(formula,var)
-        return [a for a in self.keys() if a in var]
+        return [a for a in list(self.keys()) if a in var]
         
     def replace_alarms(self, formula):
         """
@@ -1594,7 +1594,7 @@ class AlarmAPI(fandango.SingletonMap):
                     formula = new_formula+formula
             return formula
         except:
-            print('Exception in replace_alarms():%s'%traceback.format_exc())
+            print(('Exception in replace_alarms():%s'%traceback.format_exc()))
             return formula
                         
     def parse_attributes(self, formula, replace = True):
@@ -1621,7 +1621,7 @@ class AlarmAPI(fandango.SingletonMap):
                 try:
                   r = d.evaluateFormula(formula)
                   return r
-                except Exception,e:
+                except Exception as e:
                   raise e
                 finally:
                   d.set_timeout_millis(t)
@@ -1630,7 +1630,7 @@ class AlarmAPI(fandango.SingletonMap):
                 self._eval.update_locals({'PANIC':self})
                 if _locals: self._eval.update_locals(_locals)
                 return self._eval.eval(self.replace_alarms(formula))
-        except Exception,e:
+        except Exception as e:
             return e
 
     def get(self,tag='',device='',attribute='',receiver='', severity='', 
@@ -1640,7 +1640,7 @@ class AlarmAPI(fandango.SingletonMap):
         (tag,device,attribute,receiver,severity) 
         """
         result=[]
-        alarms = alarms or self.values()
+        alarms = alarms or list(self.values())
         m = fn.parse_tango_model(tag)
         if m:
             tag = m.attribute
@@ -1653,7 +1653,7 @@ class AlarmAPI(fandango.SingletonMap):
                    'receivers':receiver,'severity':severity}
           if strict: 
               found = [a for a in alarms if
-                     all([getattr(a,f)==v for f,v in filters.items() if v])]
+                     all([getattr(a,f)==v for f,v in list(filters.items()) if v])]
           else:
               found =  self.filter_alarms(filters,alarms)
           
@@ -1682,14 +1682,14 @@ class AlarmAPI(fandango.SingletonMap):
         """ 
         self.log('Getting Alarm children ...')
         result=[]
-        for a,v in self.items():
+        for a,v in list(self.items()):
             children = self.parse_alarms(v.formula)
             if children: 
                 result.extend(children)
             else: 
                 result.append(a)
         result = set(result)
-        return [v for a,v in self.items() if a in result]
+        return [v for a,v in list(self.items()) if a in result]
       
     def filter_alarms(self, filters, alarms = None):
         """
@@ -1702,13 +1702,13 @@ class AlarmAPI(fandango.SingletonMap):
           'device','active','severity','regexp','receivers'
           'formula','attribute','history','failed','hierarchy'
         """
-        alarms = alarms or self.values()
+        alarms = alarms or list(self.values())
         filters = filters or {}
         if isString(filters): filters = {'regexp':filters}
         exclude = []
         self.log('AlarmAPI.filter_alarms(%s)'%filters)
         
-        for f,r in filters.items():
+        for f,r in list(filters.items()):
             if f in ('name','alarm'): f = 'tag'
             if not r: continue
             result = []
@@ -1722,7 +1722,7 @@ class AlarmAPI(fandango.SingletonMap):
                     regexp = r.split(',')
                     for e in regexp:
                         n,e = '!' in e,e.strip('!')
-                        s = str(map(str,a.to_dict().values()))
+                        s = str(list(map(str,list(a.to_dict().values()))))
                         m = searchCl(e,s)
                         if m and n: exclude.append(a.tag)
                         elif m and not n: ok = True
@@ -1789,8 +1789,8 @@ class AlarmAPI(fandango.SingletonMap):
                     return dict((a,t) for a,t in zip(als,vals))
                 else:
                     raise Exception('')
-            except Exception,e:
-                print 'device %s is not running'%device
+            except Exception as e:
+                print('device %s is not running'%device)
                 traceback.print_exc()
                 [setattr(self.alarms[a],'active',None) for a in d.alarms]
                 return dict((a,None) for a in d.alarms)
@@ -1812,13 +1812,13 @@ class AlarmAPI(fandango.SingletonMap):
                 'SMS':'SMS' in reks,
                 }
             result[alarm.tag].update((k,v) 
-                  for k,v in self.devices[alarm.device].get_config().items() 
+                  for k,v in list(self.devices[alarm.device].get_config().items()) 
                   if k in ALARM_CONFIG)
         return result        
 
     def get_admins_for_alarm(self,alarm=''):
-        users = filter(bool,
-                self.get_class_property('PyAlarm','PanicAdminUsers'))
+        users = list(filter(bool,
+                self.get_class_property('PyAlarm','PanicAdminUsers')))
         if users:
           if alarm: 
              users = users+[r.strip().split('@')[0] for r in 
@@ -1881,9 +1881,9 @@ class AlarmAPI(fandango.SingletonMap):
         return 
         props=self.devices[device].get_config(True)
         dictlist=[]
-        for key, value in props.iteritems():
+        for key, value in props.items():
             temp = str(key)+'='+str(value[0] if isSequence(value) else value)
-            print '%s.%s.%s'%(device,alarm,temp)
+            print('%s.%s.%s'%(device,alarm,temp))
             dictlist.append(temp)
             
         l=';'.join(dictlist)

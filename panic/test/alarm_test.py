@@ -79,7 +79,7 @@ def extract(target):
     if t in api:
       alarms.append(t)
     if t in api.devices:
-      alarms.extend(api.devices[t].alarms.keys())
+      alarms.extend(list(api.devices[t].alarms.keys()))
 
   for a in alarms:
     devs.append(api[a].device)
@@ -106,15 +106,15 @@ def check(filename,device='',brief=False):
     device = file2dev(filename)
 
   data = json.load(open(filename))
-  vals = dict((str(k),v['value']) for k,v in data['attributes'].items())
-  for k,v in vals.items():
-    if type(v)==unicode:
+  vals = dict((str(k),v['value']) for k,v in list(data['attributes'].items()))
+  for k,v in list(vals.items()):
+    if type(v)==str:
       vals[k] = str(v)
 
   diff = []
   dp = ft.get_device(device)
   attrs = dp.get_attribute_list()
-  for k,v in vals.items():
+  for k,v in list(vals.items()):
     if not fn.inCl(k,attrs):
       diff.append((device,k,v,None))
     else:
@@ -122,7 +122,7 @@ def check(filename,device='',brief=False):
         w = dp.read_attribute(k).value
         if w!=v:
           diff.append((device,k,v,w))
-      except Exception,e:
+      except Exception as e:
         diff.append((device,k,v,e))
 
   if brief:
@@ -144,14 +144,14 @@ def load(instance,devices=[df,sf]):
     
     if data['dev_class'] == 'PyAlarm':
       props = data['properties']
-      props = dict((str(k),map(str,v)) for k,v in props.items())
+      props = dict((str(k),list(map(str,v))) for k,v in list(props.items()))
 
       assert not ft.get_matching_devices(dd), Exception('Device %s Already Exists!!!'%dd)
       ft.add_new_device('PyAlarm/'+instance,'PyAlarm',dd)
       ft.put_device_property(dd,props)
       
     else:
-      vals = dict((str(k),v['value']) for k,v in data['attributes'].items())
+      vals = dict((str(k),v['value']) for k,v in list(data['attributes'].items()))
       dynattrs = []
       for k,v in sorted(vals.items()):
         if k.lower() in ('state','status'):

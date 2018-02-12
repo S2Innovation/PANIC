@@ -15,9 +15,9 @@ ge = """
     <pre><code class="python">"""
     
 def test_step(n,msg):
-    print '-'*80
-    print ' '+'Test %s: %s'%(n,msg)
-    print '-'*80
+    print('-'*80)
+    print(' '+'Test %s: %s'%(n,msg))
+    print('-'*80)
     
 def check_step(n):
     if start_step<=n:
@@ -42,12 +42,12 @@ def check_alarms_vs_archiving(alarms=[]):
     af = names[a]
     v = fn.tango.read_attribute(af)
     if 1 or olds[a] and olds[a][0][1]!=v:
-      print(a,af,olds[a][0][1],v)
+      print((a,af,olds[a][0][1],v))
   return
 
     
 def main_test():
-  print msg
+  print(msg)
 
   try:
       
@@ -69,14 +69,14 @@ def main_test():
       if check_step(0):
           tango.add_new_device('PySignalSimulator/test-alarms','PySignalSimulator','test/test/alarms-test')
           tango.put_device_property('test/test/alarms-test',{
-              'DynamicAttributes':map(str.strip,
+              'DynamicAttributes':list(map(str.strip,
               """#ALARM TESTING
               A=READ and VAR('VALUE1') or WRITE and VAR('VALUE1',VALUE)
               B=DevDouble(READ and VAR('B') or WRITE and VAR('B',VALUE))
               S=DevDouble(READ and VAR('B')*sin(t%3.14) or WRITE and VAR('B',VALUE))
               D=DevLong(READ and PROPERTY('DATA',True) or WRITE and WPROPERTY('DATA',VALUE))
               C = DevLong(READ and VAR('C') or WRITE and VAR('C',VALUE))
-              T=t""".split('\n')),
+              T=t""".split('\n'))),
               'DynamicStates':
               'STATE=C #INT to STATE conversion'
               })
@@ -178,7 +178,7 @@ def main_test():
       msg=ge
 
   except:
-      print traceback.format_exc()
+      print(traceback.format_exc())
 
   N,msg = -1,"""Stopping all servers ..."""
   check_step(N)

@@ -43,7 +43,7 @@ class QAlarmManager(iValidatedWidget,object): #QAlarm):
         self.popMenu = QtGui.QMenu(self)
         view = getattr(self,'view')
         items = self.getSelectedAlarms(extend=False)
-        print('In onContextMenu(%s)'%str([a.tag for a in items]))
+        print(('In onContextMenu(%s)'%str([a.tag for a in items])))
         alarm = self.getCurrentAlarm()
         #self.popMenu.addAction(getThemeIcon("face-glasses"), 
         # "Preview Attr. Values",self.onSelectAll)
@@ -122,7 +122,7 @@ class QAlarmManager(iValidatedWidget,object): #QAlarm):
 
     def onEdit(self,edit=True):
         alarm = self.getCurrentAlarm()
-        print "AlarmGUI.onEdit(%s)"%alarm
+        print("AlarmGUI.onEdit(%s)"%alarm)
         forms = [f for f in WindowManager.WINDOWS 
             if isinstance(f,AlarmForm) and f.getCurrentAlarm().tag==alarm.tag] 
         
@@ -177,7 +177,7 @@ class QAlarmManager(iValidatedWidget,object): #QAlarm):
                              receivers=obj.receivers, 
                              severity=obj.severity)
                 self.onReload()
-            except Exception,e:
+            except Exception as e:
                 Qt.QMessageBox.critical(self,"Error!",str(e), 
                                                 QtGui.QMessageBox.AcceptRole, 
                                                 QtGui.QMessageBox.AcceptRole)
@@ -224,7 +224,7 @@ class QAlarmManager(iValidatedWidget,object): #QAlarm):
           self.snapi = get_snap_api()
 
         if self.snapi:
-          self.ctx_names=[c.name for c in self.snapi.get_contexts().values()]
+          self.ctx_names=[c.name for c in list(self.snapi.get_contexts().values())]
 
         if alarm in self.ctx_names: 
           self.ahApp = ahWidget()
@@ -299,7 +299,7 @@ def ResetAlarm(parent=None,alarm=None):
             raise Exception('comment was too short')
         comment = get_user()+': '+str(comment)
         for alarm in alarms:
-            print('ResetAlarm(%s):%s'%(alarm.tag,comment))
+            print(('ResetAlarm(%s):%s'%(alarm.tag,comment)))
             alarm.reset(comment)
             
         emitValueChanged(self)
@@ -342,7 +342,7 @@ def AcknowledgeAlarm(parent,alarm=None):
                 alarm.renounce(comment)
                 
         emitValueChanged(self)
-    except Exception,e:
+    except Exception as e:
         msg = traceback.format_exc() if e.message!=comment_error else e.message
         v = QtGui.QMessageBox.warning(self,'Warning',
                                       msg,QtGui.QMessageBox.Ok)
@@ -375,14 +375,14 @@ def ChangeDisabled(parent,alarm=None):
         
         for alarm in alarms:
             if not alarm.disabled and action == 'DISABLED':
-                print('Disabling %s'%alarm.tag)
+                print(('Disabling %s'%alarm.tag))
                 alarm.disable(comment)
             elif alarm.disabled:
-                print('Enabling %s'%alarm.tag)
+                print(('Enabling %s'%alarm.tag))
                 alarm.enable(comment)
 
         emitValueChanged(self)
-    except Exception,e:
+    except Exception as e:
         msg = traceback.format_exc() if e.message!=comment_error else e.message
         v = QtGui.QMessageBox.warning(self,'Warning',
                                       msg,QtGui.QMessageBox.Ok)
@@ -404,7 +404,7 @@ def ChangeSeverity(parent,severity,alarm=None):
                     if isinstance(f,AlarmForm)]
         emitValueChanged(parent)
         
-    except Exception,e:
+    except Exception as e:
         msg = traceback.format_exc()
         v = QtGui.QMessageBox.warning(parent,'Warning',
                                       msg,QtGui.QMessageBox.Ok)

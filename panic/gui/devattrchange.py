@@ -6,7 +6,7 @@ GPL Licensed
 
 import panic, fandango
 from fandango.qt import Qt, QtCore, QtGui
-from utils import iValidatedWidget,getThemeIcon
+from .utils import iValidatedWidget,getThemeIcon
 
 
 class dacWidget(QtGui.QWidget):
@@ -27,7 +27,7 @@ class dacWidget(QtGui.QWidget):
 class devattrchangeForm(iValidatedWidget,object):
     api=None
     def __init__(self,api=None):
-        print 'creating devattrchangeForm ...'
+        print('creating devattrchangeForm ...')
         type(self).api = api or self.api or panic.current()
         object.__init__(self)
     
@@ -88,13 +88,13 @@ class devattrchangeForm(iValidatedWidget,object):
         devList=self.api.devices
         [self.deviceCombo.addItem(QtCore.QString(d)) for d in self.api.devices]
         self.deviceCombo.model().sort(0, Qt.Qt.AscendingOrder)
-        print 'setDevCombo(%s)'%device
+        print('setDevCombo(%s)'%device)
         if device in self.api.devices: 
             i = self.deviceCombo.findText(device)
-            print '\t%s at %s'%(device,i)
+            print('\t%s at %s'%(device,i))
             self.deviceCombo.setCurrentIndex(i)
         else:
-            print '\t%s not in AlarmsAPI!'%device
+            print('\t%s not in AlarmsAPI!'%device)
 
     def buildList(self,device=None):
         self.tableWidget.blockSignals(True)
@@ -110,7 +110,7 @@ class devattrchangeForm(iValidatedWidget,object):
             # default values replacement
         else:
             data = {}
-        print '%s properties: %s' % (device,data)
+        print('%s properties: %s' % (device,data))
         rows=len(data)
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(rows)
@@ -148,7 +148,7 @@ class devattrchangeForm(iValidatedWidget,object):
                 if '/' not in s: s = 'PyAlarm/%s'%s
                 import fandango.tango as ft
                 ft.add_new_device(s,'PyAlarm',d)
-                print('%s - %s: created!'%(s,d))
+                print(('%s - %s: created!'%(s,d)))
             except:
                 traceback.print_exc()
             self.api.load()
@@ -165,9 +165,9 @@ class devattrchangeForm(iValidatedWidget,object):
                 return
             prop=str(self.tableWidget.item(row,0).text())
             value=str(self.tableWidget.item(row,1).text())
-            print 'DeviceAttributeChanger.onEdit(%s,%s = %s)'%(dev,prop,value)
+            print('DeviceAttributeChanger.onEdit(%s,%s = %s)'%(dev,prop,value))
             
-            alarms = dev.alarms.keys()
+            alarms = list(dev.alarms.keys())
             v = QtGui.QMessageBox.warning(None,'Write Properties',\
                 'The following alarms will be afected:\n\n'+
                 '\n'.join(alarms)+'\n\nAre you sure?',
@@ -186,7 +186,7 @@ class devattrchangeForm(iValidatedWidget,object):
                 self.buildList()
                 return
 
-        except Exception,e:
+        except Exception as e:
             Qt.QMessageBox.warning(self.Form,"Warning",'Exception: %s'%e)
         finally:
             self.buildList()

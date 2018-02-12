@@ -92,7 +92,7 @@ class PanicViewDS (PyTango.Device_4Impl):
             name=self.get_name(),scope=self.Scope,filters=self.Filters,
             refresh=self.Refresh,events=self.UseEvents,verbose=2,
             )
-        print('>'*80)
+        print(('>'*80))
         #----- PROTECTED REGION END -----#	//	PanicViewDS.init_device
 
     def always_executed_hook(self):
@@ -358,9 +358,9 @@ def main():
         U.server_run()
 
     except PyTango.DevFailed as e:
-        print ('-------> Received a DevFailed exception:', e)
+        print(('-------> Received a DevFailed exception:', e))
     except Exception as e:
-        print ('-------> An unforeseen exception occured....', e)
+        print(('-------> An unforeseen exception occured....', e))
 
 if __name__ == '__main__':
     main()

@@ -50,8 +50,8 @@ class PanicStatus(Qt.QTextBrowser):
 def main(*args):
     args = args or sys.argv[1:]
     if '--raw' in args:
-        print(get_panic_status(
-            [a for a in args if not a.startswith('-')][-1:]))
+        print((get_panic_status(
+            [a for a in args if not a.startswith('-')][-1:])))
     else:
         qapp = getApplication()
         w = PanicStatus()

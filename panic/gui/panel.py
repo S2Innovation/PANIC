@@ -25,7 +25,7 @@ class QAlarmPanelLabel(Qt.QLabel):
         #QtKlass.mousePressEvent(self, event)
         Qt.QLabel.mousePressEvent(self,event)
         if self._alarm:
-            print('mouse over %s'%(self._alarm.tag))
+            print(('mouse over %s'%(self._alarm.tag)))
             self.parent().setCurrentAlarm(self._alarm)
             self.parent()._manager = self            
             if event.button() == Qt.Qt.RightButton: 
@@ -42,9 +42,9 @@ class QAlarmPanelWidget(Qt.QWidget):
         self.bar.setMaximumHeight(50)
         self.modelline = Qt.QLineEdit()
         self.modelbt = Qt.QPushButton('Apply')
-        map(self.bar.layout().addWidget,(self.modelline,self.modelbt))
+        list(map(self.bar.layout().addWidget,(self.modelline,self.modelbt)))
         self.main = QAlarmPanel(self)
-        map(self.layout().addWidget,(self.bar,self.main))    
+        list(map(self.layout().addWidget,(self.bar,self.main)))    
         
     def setModel(self,model=None):
         if model is None: model = str(self.modelline.text())
@@ -56,7 +56,7 @@ class QAlarmPanel(QAlarmManager,Qt.QWidget):
     REFRESH_TIME = 3000
     
     def setModel(self,model=None,rows=0,cols=0,side=0,fontsize=0,**kwargs):
-        print('QAlarmPanel.setModel(%s)'%model)
+        print(('QAlarmPanel.setModel(%s)'%model))
         import panic,math
         
         if isinstance(model,AlarmView):
@@ -105,9 +105,9 @@ class QAlarmPanel(QAlarmManager,Qt.QWidget):
         self.setWindowIcon(Qt.QIcon(px))        
         #self.labels[self.rows-1][self.cols-1].resize(50,50)        
 
-        print('QAlarmPanel(%s): %d alarms , %d cols, %d rows: %s'
+        print(('QAlarmPanel(%s): %d alarms , %d cols, %d rows: %s'
               %(model,len(self.tags),self.cols, self.rows, 
-                fd.log.shortstr(self.tags)) + '\n'+'#'*80)
+                fd.log.shortstr(self.tags)) + '\n'+'#'*80))
                 
         self.refreshTimer = Qt.QTimer()
         Qt.QObject.connect(self.refreshTimer, 
@@ -246,7 +246,7 @@ class QAlarmPanel(QAlarmManager,Qt.QWidget):
         
     @staticmethod
     def minsplit(seq,sep='_',minsplit=None):
-        if minsplit is None: minsplit = max(map(len,seq.split(sep)))
+        if minsplit is None: minsplit = max(list(map(len,seq.split(sep))))
         o,r,i = seq,[],0
         while 0 <= i < len(seq):
             seq = seq[i:]
@@ -265,7 +265,7 @@ class QAlarmPanel(QAlarmManager,Qt.QWidget):
     def main(*args):
         import fandango,fandango.qt,sys
         opts = fandango.linos.sysargs_to_dict(split=True) #(args,opts)
-        print('in QAlarmPanel.main(%s,%s)'%(args,opts))
+        print(('in QAlarmPanel.main(%s,%s)'%(args,opts)))
         filters = fandango.first(args or opts[0] or ['*'])
         app = fandango.qt.getApplication()
         w = QAlarmPanel()

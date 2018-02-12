@@ -46,7 +46,7 @@ for data in (recipes,devices):
   o.write(header)
   o.close()
  except:
-  print('%s failed!'%str(data))
+  print(('%s failed!'%str(data)))
   
   
   

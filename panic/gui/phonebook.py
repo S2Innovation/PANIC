@@ -1,7 +1,7 @@
 import sys, panic, traceback
-from utils import Qt, QtCore, QtGui
-from utils import getThemeIcon
-from utils import iValidatedWidget
+from .utils import Qt, QtCore, QtGui
+from .utils import getThemeIcon
+from .utils import iValidatedWidget
 
 class PhoneBook(QtGui.QWidget):
     def __init__(self,parent=None,container=None):
@@ -117,7 +117,7 @@ class PhoneBookEntry(iValidatedWidget,object):
                 message='Type email address\n'
                 raise Exception(message)
             else:
-                print 'onAdd.edit_phoneBook(%s,%s,(%s))'%(name,email,section)
+                print('onAdd.edit_phoneBook(%s,%s,(%s))'%(name,email,section))
                 self.api.edit_phonebook(name,email,section)
         except Exception:
             Qt.QMessageBox.critical(None,"Error", traceback.format_exc())
@@ -208,8 +208,8 @@ class PhoneBookUi(object):
         ##alter=(str(self.tableWidget.item(pid,1).text()))
         ##self.api.edit_phonebook(alter)
         #self.buildList()
-        name,value = map(str,(self.tableWidget.item(self.tableWidget.currentRow(),0).text(),self.tableWidget.item(self.tableWidget.currentRow(),1).text()))
-        print 'PhoneBook.onEdit(%s,%s)'%(name,value)
+        name,value = list(map(str,(self.tableWidget.item(self.tableWidget.currentRow(),0).text(),self.tableWidget.item(self.tableWidget.currentRow(),1).text())))
+        print('PhoneBook.onEdit(%s,%s)'%(name,value))
         try:
             self.prompt = Qt.QWidget()
             self.promptUi = PhoneBookEntry(self)
@@ -218,7 +218,7 @@ class PhoneBookUi(object):
             self.promptUi.emailLine.setText(value)
             self.prompt.show()
         except:
-            print traceback.format_exc()
+            print(traceback.format_exc())
 
     def onAdd(self):
         try:
@@ -227,10 +227,10 @@ class PhoneBookUi(object):
             self.promptUi.addSetupUi(self.prompt)
             self.prompt.show()
         except:
-            print traceback.format_exc()
+            print(traceback.format_exc())
 
     def onRemove(self):
-        name,value = map(str,(self.tableWidget.item(self.tableWidget.currentRow(),0).text(),self.tableWidget.item(self.tableWidget.currentRow(),1).text()))
+        name,value = list(map(str,(self.tableWidget.item(self.tableWidget.currentRow(),0).text(),self.tableWidget.item(self.tableWidget.currentRow(),1).text())))
         reply=Qt.QMessageBox.question(None,"Remove","Do You Want to Remove %s?"%name, Qt.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
         if reply == QtGui.QMessageBox.Yes:
             try:
@@ -238,7 +238,7 @@ class PhoneBookUi(object):
                 self.onRefresh()
                 Qt.QMessageBox.information(None,"Remove","%s Removed"%name)
             except:
-                print traceback.format_exc()
+                print(traceback.format_exc())
                 Qt.QMessageBox.critical(None,"Problem", "Could not remove selected person<br>")
 
     def onRefresh(self):
