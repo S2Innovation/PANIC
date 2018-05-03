@@ -67,6 +67,17 @@ In edit mode user can change name, move alarms to another device, change descrip
 Additional widgets in which the app is equipped allows alarm history viewing, phonebook editing and 
 device settings manipulation.
 
+Requirements
+============
+
+- [fandango](https://github.com/tango-controls/fandango)
+- [PyTango](https://github.com/tango-controls/pytango)
+- [taurus](https://github.com/taurus-org/taurus)
+
+```console
+pip install -r requirements.txt
+```
+
 Authors
 =======
 
