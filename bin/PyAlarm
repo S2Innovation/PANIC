@@ -3,6 +3,8 @@
 # This script is a variant from fandango.scripts.DynamicDS
 # srubio@cells.es, 2016
 
+unset PYTHONPATH
+
 DS=PyAlarm
 INSTANCE=$1
 
