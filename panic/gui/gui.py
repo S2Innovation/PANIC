@@ -225,7 +225,7 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
             self.reloadTimer.setInterval(self.MAX_REFRESH)
 
     @Catched
-    def onReload(self):
+    def onReload(self,clear_selection=False):
         # THIS METHOD WILL NOT MODIFY THE LIST IF JUST FILTERS HAS CHANGED; 
         # TO UPDATE FILTERS USE onRefresh INSTEAD
         try:
@@ -235,6 +235,7 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
             trace('%s -> AlarmGUI.onReload() after %f seconds'%(
               now,now-self.last_reload))
             self.last_reload=now
+            self._ui.listWidget.clearSelection()
             self.api.load()
             self.setSecondCombo()
             #self.checkAlarmRows()
@@ -335,7 +336,8 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
     
     def getSelectedAlarms(self,extend=False):
         rows = self.getSelectedItems(extend)
-        return filter(bool,(self.getCurrentAlarm(r) for r in rows))
+        sel = filter(bool,(self.getCurrentAlarm(r) for r in rows))
+        return [a for a in sel if a.tag in self.api]
       
     def getVisibleRows(self,margin=10):
         ql = self._ui.listWidget
@@ -511,6 +513,7 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
                 self._ui.listWidget.item(i).setFont(font)
             
             item = self._ui.listWidget.item(i)
+            item.setHidden(False)
             row = str(item.text())
             if text!=row:
                 #font = Qt.QFont(Qt.QString("Courier"))
@@ -530,6 +533,7 @@ class QAlarmList(QAlarmManager,PARENT_CLASS):
             
         for i in range(len(data),self._ui.listWidget.count()):
             item = self._ui.listWidget.item(i)
+            item.setHidden(True)
             item.setText('')
             item.setBackgroundColor(Qt.QColor('white'))
             item.setIcon(self.NO_ICON)
