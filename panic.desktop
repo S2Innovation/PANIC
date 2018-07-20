@@ -7,4 +7,4 @@ Terminal=true
 Categories=COMMON
 Exec=panic
 Name=PANIC GUI for Alarms
-Icon=preferences-system-firewall-new
+Icon=abrt-applet

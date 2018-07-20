@@ -5,3 +5,23 @@ include README
 include panic/CHANGES*
 include panic/VERSION
 
+
+# added by check_manifest.py
+include *.desktop
+include *.txt
+recursive-include contrib *.spec
+recursive-include doc *.bat
+recursive-include doc *.html
+recursive-include doc *.pdf
+recursive-include doc *.png
+recursive-include doc *.py
+recursive-include doc *.rst
+recursive-include doc *.txt
+recursive-include doc Makefile
+recursive-include panic *.csv
+recursive-include panic *.gif
+recursive-include panic *.jive
+recursive-include panic *.py
+recursive-include panic *.rst
+recursive-include panic *.txt
+recursive-include panic *.xmi
