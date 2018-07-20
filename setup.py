@@ -62,6 +62,7 @@ setup(
     entry_points=entry_points,
     scripts=scripts,
     include_package_date=True,
+    data_files = [("share/applications", ["panic.desktop"])],
 )
 
 
