@@ -3,8 +3,8 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Terminal=true
+Terminal=false
 Categories=COMMON
 Exec=panic
-Name=PANIC GUI for Alarms
-Icon=abrt-applet
+Name=PANIC GUI
+Icon=/usr/share/icons/SOLARIS/panic-6.png

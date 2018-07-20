@@ -62,7 +62,7 @@ setup(
     entry_points=entry_points,
     scripts=scripts,
     include_package_date=True,
-    data_files = [("share/applications", ["panic.desktop"])],
+    data_files = [("share/applications", ["panic.desktop"]), ("share/icons/SOLARIS",["panic/gui/icon/panic-6.png"]),],
 )
 
 
